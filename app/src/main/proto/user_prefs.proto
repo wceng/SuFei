@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option java_package = "dev.wceng.sufei.data.local.datastore";
+option java_multiple_files = true;
+
+message UserPreferences {
+  repeated string favorite_poem_ids = 1;
+  float font_size_multiplier = 2;
+  float line_height_multiplier = 3;
+  bool use_dynamic_color = 4;
+  string font_family_name = 5;
+}
