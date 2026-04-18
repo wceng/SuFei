@@ -9,4 +9,8 @@ message UserPreferences {
   float line_height_multiplier = 3;
   bool use_dynamic_color = 4;
   string font_family_name = 5;
+  // 每日诗词 ID
+  string daily_poem_id = 6;
+  // 上次更新每日诗词的时间戳 (毫秒)
+  int64 last_update_millis = 7;
 }

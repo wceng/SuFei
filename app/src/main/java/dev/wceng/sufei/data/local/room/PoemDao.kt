@@ -39,4 +39,13 @@ interface PoemDao {
 
     @Query("SELECT * FROM poems ORDER BY RANDOM() LIMIT 1")
     fun getRandomPoem(): Flow<PoemEntity?>
+
+    @Query("""
+        SELECT * FROM poems 
+        WHERE notes IS NOT NULL AND notes != '' 
+        AND translation IS NOT NULL AND translation != '' 
+        AND intro IS NOT NULL AND intro != '' 
+        ORDER BY RANDOM() LIMIT 1
+    """)
+    fun getHighQualityRandomPoem(): Flow<PoemEntity?>
 }

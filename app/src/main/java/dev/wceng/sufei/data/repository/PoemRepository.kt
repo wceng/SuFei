@@ -1,6 +1,7 @@
 package dev.wceng.sufei.data.repository
 
 import dev.wceng.sufei.data.model.Poet
+import dev.wceng.sufei.data.model.Poem
 import dev.wceng.sufei.data.model.SearchResult
 import dev.wceng.sufei.data.model.Tag
 import dev.wceng.sufei.data.model.Tune
@@ -17,6 +18,11 @@ interface PoemRepository {
      * 根据 ID 获取单首诗词 (带实时偏好状态)
      */
     fun getUserPoemById(id: String): Flow<UserPoem?>
+
+    /**
+     * 根据 ID 获取单首诗词流 (原始模型)
+     */
+    fun getPoemByIdFlow(id: String): Flow<Poem?>
 
     /**
      * 搜索诗词，支持朝代和标签过滤
@@ -41,7 +47,7 @@ interface PoemRepository {
     ): Flow<SearchResult>
 
     /**
-     * 获取随机诗词
+     * 获取随机诗词 (内部处理每日更新逻辑)
      */
     fun getRandomUserPoem(): Flow<UserPoem?>
 

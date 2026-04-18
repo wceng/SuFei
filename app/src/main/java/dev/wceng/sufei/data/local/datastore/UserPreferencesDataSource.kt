@@ -20,7 +20,9 @@ class UserPreferencesDataSource(
                 fontSizeMultiplier = if (proto.fontSizeMultiplier == 0f) 1.0f else proto.fontSizeMultiplier,
                 lineHeightMultiplier = if (proto.lineHeightMultiplier == 0f) 1.0f else proto.lineHeightMultiplier,
                 useDynamicColor = proto.useDynamicColor,
-                fontFamilyName = proto.fontFamilyName.ifEmpty { "Serif" }
+                fontFamilyName = proto.fontFamilyName.ifEmpty { "Serif" },
+                dailyPoemId = proto.dailyPoemId,
+                lastUpdateMillis = proto.lastUpdateMillis
             )
         }
 
@@ -56,6 +58,18 @@ class UserPreferencesDataSource(
 
     suspend fun setFontFamilyName(name: String) {
         updateData { it.toBuilder().setFontFamilyName(name).build() }
+    }
+
+    /**
+     * 更新每日诗词
+     */
+    suspend fun updateDailyPoem(poemId: String, timestamp: Long) {
+        updateData { 
+            it.toBuilder()
+                .setDailyPoemId(poemId)
+                .setLastUpdateMillis(timestamp)
+                .build() 
+        }
     }
 
     private suspend fun updateData(transform: (UserPreferences) -> UserPreferences) {

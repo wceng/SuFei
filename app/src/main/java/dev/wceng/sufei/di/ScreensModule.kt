@@ -1,11 +1,18 @@
 package dev.wceng.sufei.di
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.hilt.navigation.compose.hiltViewModel
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ActivityRetainedComponent
 import dagger.multibindings.IntoSet
+import androidx.navigation3.ui.NavDisplay
 import dev.wceng.sufei.ui.navigation.Collection
 import dev.wceng.sufei.ui.navigation.Detail
 import dev.wceng.sufei.ui.navigation.EntryProviderInstaller
@@ -73,8 +80,6 @@ object ScreensModule {
     @Provides
     fun provideSquareEntry(navigator: Navigator): EntryProviderInstaller = {
         entry<Square> { key ->
-            // 获取共享的 ExploreViewModel
-//            val context = LocalContext.current as ComponentActivity
             val exploreViewModel: ExploreViewModel = hiltViewModel()
 
             val squareViewModel = hiltViewModel<SquareViewModel, SquareViewModel.Factory>(
@@ -103,7 +108,18 @@ object ScreensModule {
     @IntoSet
     @Provides
     fun providePoetDetailEntry(navigator: Navigator): EntryProviderInstaller = {
-        entry<PoetDetail> { key ->
+        entry<PoetDetail>(
+            metadata = NavDisplay.transitionSpec {
+                (slideInVertically(animationSpec = tween(400), initialOffsetY = { it / 10 }) + fadeIn()) togetherWith
+                        fadeOut(animationSpec = tween(400))
+            } + NavDisplay.popTransitionSpec {
+                fadeIn(animationSpec = tween(400)) togetherWith
+                        (slideOutVertically(animationSpec = tween(400), targetOffsetY = { it / 10 }) + fadeOut())
+            } + NavDisplay.predictivePopTransitionSpec { _ ->
+                fadeIn(animationSpec = tween(400)) togetherWith
+                        (slideOutVertically(animationSpec = tween(400), targetOffsetY = { it / 10 }) + fadeOut())
+            }
+        ) { key ->
             val viewModel = hiltViewModel<PoetDetailViewModel, PoetDetailViewModel.Factory>(
                 key = key.id,
                 creationCallback = { factory -> factory.create(key.id) }
@@ -133,7 +149,18 @@ object ScreensModule {
     @IntoSet
     @Provides
     fun provideDetailEntry(navigator: Navigator): EntryProviderInstaller = {
-        entry<Detail> { key ->
+        entry<Detail>(
+            metadata = NavDisplay.transitionSpec {
+                (slideInVertically(animationSpec = tween(400), initialOffsetY = { it / 10 }) + fadeIn()) togetherWith
+                        fadeOut(animationSpec = tween(400))
+            } + NavDisplay.popTransitionSpec {
+                fadeIn(animationSpec = tween(400)) togetherWith
+                        (slideOutVertically(animationSpec = tween(400), targetOffsetY = { it / 10 }) + fadeOut())
+            } + NavDisplay.predictivePopTransitionSpec { _ ->
+                fadeIn(animationSpec = tween(400)) togetherWith
+                        (slideOutVertically(animationSpec = tween(400), targetOffsetY = { it / 10 }) + fadeOut())
+            }
+        ) { key ->
             val viewModel = hiltViewModel<DetailViewModel, DetailViewModel.Factory>(
                 key = key.id,
                 creationCallback = { factory -> factory.create(key) }

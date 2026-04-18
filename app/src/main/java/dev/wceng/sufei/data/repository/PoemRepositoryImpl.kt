@@ -9,6 +9,7 @@ import dev.wceng.sufei.data.local.room.entity.toPoem
 import dev.wceng.sufei.data.local.room.entity.toPoet
 import dev.wceng.sufei.data.local.room.entity.toTag
 import dev.wceng.sufei.data.local.room.entity.toTune
+import dev.wceng.sufei.data.model.Poem
 import dev.wceng.sufei.data.model.Poet
 import dev.wceng.sufei.data.model.SearchResult
 import dev.wceng.sufei.data.model.Tag
@@ -18,7 +19,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -54,6 +57,11 @@ class PoemRepositoryImpl @Inject constructor(
                 UserPoem(poem = it.toPoem(), userPreferences = prefs)
             }
         }.flowOn(Dispatchers.IO)
+    }
+
+    override fun getPoemByIdFlow(id: String): Flow<Poem?> {
+        return poemDao.getPoemByIdFlow(id).map { it?.toPoem() }
+            .flowOn(Dispatchers.IO)
     }
 
     override fun searchUserPoems(
@@ -92,15 +100,36 @@ class PoemRepositoryImpl @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun getRandomUserPoem(): Flow<UserPoem?> {
-        return combine(
-            poemDao.getRandomPoem(),
-            userPreferencesDataSource.userPreferencesFlow
-        ) { entity, prefs ->
-            entity?.let {
-                UserPoem(poem = it.toPoem(), userPreferences = prefs)
+        return userPreferencesDataSource.userPreferencesFlow
+            .flatMapLatest { prefs ->
+                val now = System.currentTimeMillis()
+//                val tenMinutesInMillis = 10 * 60 * 1000L
+                val tenMinutesInMillis = 6 * 1000L
+
+                // 判断是否需要更新：没有 ID 或 距离上次更新超过 10 分钟
+                if (prefs.dailyPoemId.isEmpty() || (now - prefs.lastUpdateMillis > tenMinutesInMillis)) {
+                    flow {
+                        val newPoemEntity = poemDao.getHighQualityRandomPoem().firstOrNull() 
+                            ?: poemDao.getRandomPoem().firstOrNull()
+                        
+                        if (newPoemEntity != null) {
+                            userPreferencesDataSource.updateDailyPoem(newPoemEntity.id, now)
+                            emit(UserPoem(poem = newPoemEntity.toPoem(), userPreferences = prefs))
+                        } else {
+                            emit(null)
+                        }
+                    }
+                } else {
+                    poemDao.getPoemByIdFlow(prefs.dailyPoemId).map { entity ->
+                        entity?.let {
+                            UserPoem(poem = it.toPoem(), userPreferences = prefs)
+                        }
+                    }
+                }
             }
-        }.flowOn(Dispatchers.IO)
+            .flowOn(Dispatchers.IO)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

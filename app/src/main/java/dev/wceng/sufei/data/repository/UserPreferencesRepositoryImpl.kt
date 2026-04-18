@@ -32,4 +32,8 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override suspend fun setFontFamilyName(name: String) {
         dataSource.setFontFamilyName(name)
     }
+
+    override suspend fun updateDailyPoem(poemId: String, timestamp: Long) {
+        dataSource.updateDailyPoem(poemId, timestamp)
+    }
 }

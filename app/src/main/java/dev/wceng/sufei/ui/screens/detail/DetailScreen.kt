@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
@@ -38,12 +37,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import dev.wceng.sufei.data.model.Poem
 import dev.wceng.sufei.data.model.UserPoem
 import dev.wceng.sufei.data.model.UserPreferences
@@ -72,7 +74,10 @@ fun DetailContent(
     onBack: () -> Unit,
     onFavoriteToggle: (Boolean) -> Unit
 ) {
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
                 title = { },
@@ -93,7 +98,11 @@ fun DetailContent(
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    scrolledContainerColor = Color.Transparent
+                )
             )
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -111,7 +120,6 @@ fun DetailContent(
                     PoemReader(
                         userPoem = uiState.userPoem,
                         userPreferences = uiState.userPreferences,
-                        modifier = Modifier.padding(bottom = 32.dp)
                     )
                 }
                 is DetailUiState.Error -> {
@@ -170,7 +178,7 @@ fun PoemReader(
             Spacer(modifier = Modifier.height(12.dp))
             FlowRow(
                 horizontalArrangement = Arrangement.Center,
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 poem.tags.forEach { tag ->
@@ -200,35 +208,20 @@ fun PoemReader(
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        // --- 核心改动：仅诗词正文内容可选 ---
+        // --- 核心修复：生命周期感知选择 ---
+        // 仅在页面 Resume 时启用选择，转场开始时自动移除以避免 Handles 坐标计算闪退
+        val lifecycleOwner = LocalLifecycleOwner.current
+        val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
+        val isSelectionEnabled = lifecycleState.isAtLeast(Lifecycle.State.RESUMED)
+
         val paragraphs = remember(poem.content) { poem.content.split("\n") }
 
-        SelectionContainer {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                paragraphs.forEach { paragraph ->
-                    FlowRow(
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        val verses = paragraph.split(Regex("(?<=[，。！？；])")).filter { it.isNotBlank() }
-                        verses.forEach { verse ->
-                            Text(
-                                text = verse.trim(),
-                                style = MaterialTheme.typography.displaySmall.copy(
-                                    fontFamily = FontFamily.Serif,
-                                    fontWeight = FontWeight.Light,
-                                    fontSize = (18 * userPreferences.fontSizeMultiplier).sp,
-                                    lineHeight = (32 * userPreferences.lineHeightMultiplier).sp,
-                                    letterSpacing = 2.sp
-                                ),
-                                softWrap = false,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp)
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
+        if (isSelectionEnabled) {
+            SelectionContainer {
+                PoemBody(paragraphs, userPreferences)
             }
+        } else {
+            PoemBody(paragraphs, userPreferences)
         }
         
         if (!poem.notes.isNullOrBlank() || !poem.translation.isNullOrBlank() || !poem.intro.isNullOrBlank() || !poem.background.isNullOrBlank()) {
@@ -243,6 +236,36 @@ fun PoemReader(
         }
 
         Spacer(modifier = Modifier.height(64.dp))
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun PoemBody(paragraphs: List<String>, userPreferences: UserPreferences) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        paragraphs.forEach { paragraph ->
+            FlowRow(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                val verses = paragraph.split(Regex("(?<=[，。！？；])")).filter { it.isNotBlank() }
+                verses.forEach { verse ->
+                    Text(
+                        text = verse.trim(),
+                        style = MaterialTheme.typography.displaySmall.copy(
+                            fontFamily = FontFamily.Serif,
+                            fontWeight = FontWeight.Light,
+                            fontSize = (18 * userPreferences.fontSizeMultiplier).sp,
+                            lineHeight = (32 * userPreferences.lineHeightMultiplier).sp,
+                            letterSpacing = 2.sp
+                        ),
+                        softWrap = false,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
     }
 }
 
