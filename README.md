@@ -1,56 +1,89 @@
-# 素扉 (SuFei)
+# 素扉 (SuFei) — 数字诗集
 
-[![Android Studio](https://img.shields.io/badge/Android%20Studio-2024.2+-orange.svg?style=flat&logo=android-studio)](https://developer.android.com/studio)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.0+-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
-[![Compose](https://img.shields.io/badge/Jetpack%20Compose-1.7+-green.svg?style=flat&logo=jetpack-compose)](https://developer.android.com/jetpack/compose)
+<p align="center">
+  <img src="https://img.shields.io/badge/Android-Ladybug+-3DDC84?style=for-the-badge&logo=android&logoColor=white" />
+  <img src="https://img.shields.io/badge/Kotlin-2.0-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" />
+  <img src="https://img.shields.io/badge/Jetpack_Compose-1.7-4285F4?style=for-the-badge&logo=jetpack-compose&logoColor=white" />
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" />
+</p>
 
-**素扉**（SuFei）是一款专注于中国传统诗词沉浸式阅读的应用。其设计理念源于“素雅之色，开启文学之扉”，旨在打造一个无广告、无干扰、纯粹且宁静的数字诗集。
+**素扉**（SuFei）是一款基于 **Material 3** 设计规范的极简中国传统诗词应用。它不只是一个工具，更是一个宁静的数字阅读空间。我们摒弃了繁琐的社交功能与广告，只为还原最纯粹的诗词意境。
+
+---
+
+## 📸 视觉预览 (Screenshots)
+
+### 核心页面
+<p align="center">
+  <img src="screenshots/home.png" width="32%" />
+  <img src="screenshots/explore.png" width="32%" />
+  <img src="screenshots/collection.png" width="32%" />
+</p>
+
+### 详情与功能
+<p align="center">
+  <img src="screenshots/poem_detail.png" width="24%" />
+  <img src="screenshots/poet_detail.png" width="24%" />
+  <img src="screenshots/search_result.png" width="24%" />
+  <img src="screenshots/settings.png" width="24%" />
+</p>
+
+> [!TIP]
+> **设计特色**：首页采用传统**竖排布局**，配合衬线字体与妃红印章，还原古籍美学。全站支持 **Material You** 动态色彩。
 
 ---
 
 ## ✨ 核心特性
 
-- 📖 **沉浸式阅读**：极致的排版优化，支持衬线字体，模拟宣纸质感的阅读体验。
-- 📅 **每日偶遇**：首页“今日”板块，基于智能算法每 10 分钟推荐一段经典的、语义完整的诗词金句。
-- 🔍 **万卷搜寻**：三级过滤体系（朝代、词牌、标签），助你精准定位心头好。
-- ❤️ **枕边私藏**：一键收藏心仪作品，打造个人专属的文学空间。
-- 🎭 **智能解析**：精准识别诗、词、曲，并根据文体特征自动提取最精彩的完整段落展示。
-- 🎨 **现代动效**：全站支持 Navigation 3 动效规范，包括优雅的淡入淡出及 Android 13+ 预测性返回手势。
+- 🏛️ **现代架构**：完全基于 **Now in Android** 的响应式编程模型，遵循 Clean Architecture。
+- 📖 **沉浸式阅读**：模拟宣纸质感，支持衬线字体，针对长短句自动优化的排版算法。
+- 📅 **每日偶遇**：智能提取算法，每 10 分钟自动在首页推荐一段意境完整的经典诗句。
+- 🔍 **万卷搜寻**：三级极简过滤（朝代/词牌/标签），毫秒级全文检索。
+- 🎭 **文体感知**：自动识别诗/词/曲，针对“词”自动提取精华结拍（末尾句）进行展示。
+- 🎨 **优雅动效**：基于 Navigation 3 实现全局淡入淡出，原生支持 Android 13+ **预测性返回**手势。
 
 ---
 
-## 🛠️ 技术栈
+## 🛠️ 技术栈 (Tech Stack)
 
-- **UI 框架**：[Jetpack Compose](https://developer.android.com/jetpack/compose) (声明式 UI)
-- **导航**：[Navigation 3](https://developer.android.com/guide/navigation/navigation-3) (最新的 Compose 导航方案)
-- **依赖注入**：[Hilt](https://developer.android.com/training/dependency-injection/hilt-android)
-- **本地存储**：[Room](https://developer.android.com/training/data-storage/room) (SQLite 封装)
-- **数据流**：Kotlin Coroutines & Flow
-- **偏好管理**：[Proto DataStore](https://developer.android.com/topic/libraries/architecture/datastore)
-- **架构**：遵循 MVVM 架构及 Now in Android (NiA) 的响应式编程规范。
+| 维度 | 技术选型 |
+| :--- | :--- |
+| **UI** | Jetpack Compose (1.7+) |
+| **Navigation** | Navigation 3 (Experimental Compose API) |
+| **DI** | Hilt |
+| **Database** | Room |
+| **Storage** | Proto DataStore |
+| **Concurrency** | Kotlin Coroutines & Flow |
 
 ---
 
-## 🎨 设计理念
+## 📂 项目结构
 
-项目核心遵循 **Material 3** 规范，并融入了中国传统美学：
-- **留白**：大面积的背景留白，缓解视觉压力。
-- **竖排**：首页金句采用传统竖排布局，标点符号经过特殊偏移处理。
-- **色彩**：采用低饱和度的传统色（如“妃红”作为收藏色），适配 Material You 动态色彩。
+```text
+app/src/main/java/dev/wceng/sufei/
+├── data/           # 数据层：Room 实体、DAO、DataStore、Repository 实现
+├── di/             # 依赖注入：Hilt 模块
+├── ui/             
+│   ├── navigation/ # 路由定义与 Navigator 封装
+│   ├── screens/    # 功能屏幕实现（Home, Explore, Detail, etc.）
+│   └── theme/      # Material 3 主题配置
+└── MainActivity.kt # 入口 Activity
+```
 
 ---
 
 ## 🚀 快速开始
 
-1. 克隆仓库：
-   ```bash
-   git clone https://github.com/wceng/SuFei.git
-   ```
-2. 使用最新版 **Android Studio Ladybug** 或更高版本打开项目。
-3. 等待 Gradle 同步完成后，直接运行即可。
+1. **环境**：确保你的 Android Studio 版本为 **Ladybug (2024.2.1)** 或更新。
+2. **克隆**：`git clone https://github.com/wceng/SuFei.git`
+3. **运行**：本项目使用 `libs.versions.toml` 管理依赖，直接 Sync Gradle 即可运行。
 
 ---
 
 ## 📄 开源协议
 
-本项目遵循 [MIT License](LICENSE) 协议。
+本项目基于 **MIT License** 开源。欢迎任何形式的 PR 和 Issue！
+
+---
+
+<p align="center"> 如果这个项目触动了你的文人情怀，请点一个 <b>Star</b> ⭐ 鼓励我们。 </p>
