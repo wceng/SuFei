@@ -8,7 +8,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -50,7 +49,6 @@ fun SplashContent(importState: ImportState) {
             Text(
                 text = "素扉",
                 style = MaterialTheme.typography.displayLarge.copy(
-                    fontFamily = FontFamily.Serif,
                     fontWeight = FontWeight.Light,
                     color = MaterialTheme.colorScheme.onBackground,
                     letterSpacing = 8.sp
@@ -62,7 +60,6 @@ fun SplashContent(importState: ImportState) {
             // 导入状态展示
             when (val state = importState) {
                 is ImportState.Importing -> {
-                    // 根据设计规范，在 UI 层定义文学化提示语
                     val message = when {
                         state.progress < 0.33f -> "正在为您裁切宣纸..."
                         state.progress < 0.66f -> "正为您整理万卷书..."
@@ -87,7 +84,6 @@ fun SplashContent(importState: ImportState) {
                         Text(
                             text = message,
                             style = MaterialTheme.typography.bodySmall.copy(
-                                fontFamily = FontFamily.Serif,
                                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                             )
                         )
@@ -100,9 +96,7 @@ fun SplashContent(importState: ImportState) {
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
-                else -> {
-                    // Idle 或 Success 状态不展示内容
-                }
+                else -> {}
             }
         }
     }

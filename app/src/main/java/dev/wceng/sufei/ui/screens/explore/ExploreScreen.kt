@@ -3,6 +3,7 @@ package dev.wceng.sufei.ui.screens.explore
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -22,6 +23,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
@@ -36,19 +38,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import dev.wceng.sufei.data.model.Poem
 import dev.wceng.sufei.data.model.Poet
@@ -57,6 +62,7 @@ import dev.wceng.sufei.data.model.Tag
 import dev.wceng.sufei.data.model.Tune
 import dev.wceng.sufei.data.model.UserPoem
 import dev.wceng.sufei.ui.theme.SuFeiTheme
+import kotlin.math.roundToInt
 
 @Composable
 fun ExploreScreen(
@@ -118,12 +124,13 @@ fun ExploreContent(
         "五代", "金朝", "近代", "现代", "当代"
     )
 
-    // 为每一行过滤列表维护滚动状态
     val dynastyListState = rememberLazyListState()
     val tuneListState = rememberLazyListState()
     val tagListState = rememberLazyListState()
 
-    // 监听选中项的变化，自动滚动到可见区域
+    // 定义滚动行为
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
     LaunchedEffect(selectedDynasty) {
         selectedDynasty?.let { name ->
             val index = dynasties.indexOf(name)
@@ -147,7 +154,9 @@ fun ExploreContent(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
     ) {
+        // 固定搜索框
         SearchBar(
             inputField = {
                 SearchBarDefaults.InputField(
@@ -158,6 +167,13 @@ fun ExploreContent(
                     onExpandedChange = { },
                     placeholder = { Text("搜索诗人、标题、内容") },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { onSearchQueryChange("") }) {
+                                Icon(Icons.Default.Close, contentDescription = null)
+                            }
+                        }
+                    }
                 )
             },
             expanded = false,
@@ -168,35 +184,58 @@ fun ExploreContent(
             content = { }
         )
 
-        // 1. 朝代过滤
-        FilterRow(
-            items = dynasties,
-            selected = selectedDynasty,
-            onSelect = onDynastySelect,
-            state = dynastyListState
-        )
-
-        // 2. 词牌过滤
-        FilterRowWithMore(
-            items = recommendedTunes.map { it.name },
-            selected = selectedTune,
-            onSelect = onTuneSelect,
-            onMore = onAllTunesClick,
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-            state = tuneListState
-        )
-
-        // 3. 标签过滤
-        FilterRowWithMore(
-            items = recommendedTags.map { it.name },
-            selected = selectedTag,
-            onSelect = onTagSelect,
-            onMore = onAllTagsClick,
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            state = tagListState
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
+        // 标签栏容器：位移 + 渐变消失
+        Box(
+            modifier = Modifier
+                .layout { measurable, constraints ->
+                    val placeable = measurable.measure(constraints)
+                    val height = placeable.height
+                    if (scrollBehavior.state.heightOffsetLimit != -height.toFloat()) {
+                        scrollBehavior.state.heightOffsetLimit = -height.toFloat()
+                    }
+                    
+                    val currentHeight = (height + scrollBehavior.state.heightOffset).roundToInt()
+                    layout(placeable.width, currentHeight) {
+                        placeable.placeRelative(0, scrollBehavior.state.heightOffset.roundToInt())
+                    }
+                }
+                .graphicsLayer {
+                    // 计算透明度：1.0 -> 0.0
+                    val limit = scrollBehavior.state.heightOffsetLimit
+                    alpha = if (limit != 0f) {
+                        (1f - (scrollBehavior.state.heightOffset / limit)).coerceIn(0f, 1f)
+                    } else {
+                        1f
+                    }
+                }
+                .clipToBounds()
+        ) {
+            Column {
+                FilterRow(
+                    items = dynasties,
+                    selected = selectedDynasty,
+                    onSelect = onDynastySelect,
+                    state = dynastyListState
+                )
+                FilterRowWithMore(
+                    items = recommendedTunes.map { it.name },
+                    selected = selectedTune,
+                    onSelect = onTuneSelect,
+                    onMore = onAllTunesClick,
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    state = tuneListState
+                )
+                FilterRowWithMore(
+                    items = recommendedTags.map { it.name },
+                    selected = selectedTag,
+                    onSelect = onTagSelect,
+                    onMore = onAllTagsClick,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    state = tagListState
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
 
         LazyVerticalStaggeredGrid(
             columns = StaggeredGridCells.Fixed(2),
@@ -242,7 +281,7 @@ fun FilterRow(
             FilterChip(
                 selected = selected == item,
                 onClick = { onSelect(if (selected == item) null else item) },
-                label = { Text(text = item, fontFamily = FontFamily.Serif, fontSize = 13.sp) }
+                label = { Text(text = item) }
             )
         }
     }
@@ -267,7 +306,7 @@ fun FilterRowWithMore(
             FilterChip(
                 selected = selected == item,
                 onClick = { onSelect(if (selected == item) null else item) },
-                label = { Text(text = item, fontFamily = FontFamily.Serif, fontSize = 13.sp) },
+                label = { Text(text = item) },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = containerColor
                 )
@@ -290,7 +329,6 @@ fun SectionTitle(title: String) {
     Text(
         text = title,
         style = MaterialTheme.typography.titleMedium.copy(
-            fontFamily = FontFamily.Serif,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
         ),
@@ -333,7 +371,6 @@ fun PoetPreviewCard(
             Text(
                 text = poet.name,
                 style = MaterialTheme.typography.titleLarge.copy(
-                    fontFamily = FontFamily.Serif,
                     fontWeight = FontWeight.Bold
                 )
             )
@@ -346,10 +383,7 @@ fun PoetPreviewCard(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = poet.lifetime,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontFamily = FontFamily.Serif,
-                        lineHeight = 18.sp
-                    ),
+                    style = MaterialTheme.typography.bodyMedium,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -377,7 +411,6 @@ fun PoemPreviewCard(
             Text(
                 text = poem.title,
                 style = MaterialTheme.typography.titleMedium.copy(
-                    fontFamily = FontFamily.Serif,
                     fontWeight = FontWeight.Bold
                 ),
                 maxLines = 1,
@@ -386,7 +419,6 @@ fun PoemPreviewCard(
             Text(
                 text = poem.author,
                 style = MaterialTheme.typography.bodySmall.copy(
-                    fontFamily = FontFamily.Serif,
                     color = MaterialTheme.colorScheme.primary
                 ),
                 modifier = Modifier.padding(vertical = 4.dp)
@@ -394,8 +426,6 @@ fun PoemPreviewCard(
             Text(
                 text = poem.content.replace("\n", " "),
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = FontFamily.Serif,
-                    lineHeight = 20.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 ),
                 maxLines = 4,
@@ -410,7 +440,7 @@ fun PoemPreviewCard(
 fun ExploreContentPreview() {
     SuFeiTheme {
         ExploreContent(
-            searchQuery = "",
+            searchQuery = "李白",
             onSearchQueryChange = {},
             selectedDynasty = "唐代",
             onDynastySelect = {},

@@ -10,7 +10,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -48,7 +47,6 @@ fun SettingsContent(
                 title = { 
                     Text(
                         "设置", 
-                        fontFamily = FontFamily.Serif,
                         fontWeight = FontWeight.Bold
                     ) 
                 }

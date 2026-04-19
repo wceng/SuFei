@@ -38,7 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -149,11 +148,10 @@ fun PoemReader(
             .padding(horizontal = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 标题动态字号：20sp
+        // 标题：自动继承全局 headlineMedium 的字体
         Text(
             text = poem.title,
             style = MaterialTheme.typography.headlineMedium.copy(
-                fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Bold,
                 fontSize = (20 * userPreferences.fontSizeMultiplier).sp,
                 letterSpacing = 2.sp
@@ -163,11 +161,10 @@ fun PoemReader(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 朝代作者：14sp
+        // 朝代作者：自动继承全局 bodyLarge 的字体
         Text(
             text = "${poem.dynasty} · ${poem.author}",
             style = MaterialTheme.typography.bodyLarge.copy(
-                fontFamily = FontFamily.Serif,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                 fontSize = (14 * userPreferences.fontSizeMultiplier).sp
             )
@@ -188,7 +185,6 @@ fun PoemReader(
                             Text(
                                 text = tag,
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    fontFamily = FontFamily.Serif,
                                     fontSize = (11 * userPreferences.fontSizeMultiplier).sp
                                 )
                             )
@@ -208,8 +204,7 @@ fun PoemReader(
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        // --- 核心修复：生命周期感知选择 ---
-        // 仅在页面 Resume 时启用选择，转场开始时自动移除以避免 Handles 坐标计算闪退
+        // --- 生命周期感知选择 ---
         val lifecycleOwner = LocalLifecycleOwner.current
         val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
         val isSelectionEnabled = lifecycleState.isAtLeast(Lifecycle.State.RESUMED)
@@ -253,7 +248,6 @@ private fun PoemBody(paragraphs: List<String>, userPreferences: UserPreferences)
                     Text(
                         text = verse.trim(),
                         style = MaterialTheme.typography.displaySmall.copy(
-                            fontFamily = FontFamily.Serif,
                             fontWeight = FontWeight.Light,
                             fontSize = (18 * userPreferences.fontSizeMultiplier).sp,
                             lineHeight = (32 * userPreferences.lineHeightMultiplier).sp,
@@ -280,7 +274,6 @@ fun InterpretationSection(title: String, content: String?, multiplier: Float) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium.copy(
-                fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
                 fontSize = (16 * multiplier).sp
@@ -290,7 +283,6 @@ fun InterpretationSection(title: String, content: String?, multiplier: Float) {
         Text(
             text = content,
             style = MaterialTheme.typography.bodyLarge.copy(
-                fontFamily = FontFamily.Serif,
                 lineHeight = (24 * multiplier).sp,
                 fontSize = (14 * multiplier).sp
             )

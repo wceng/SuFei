@@ -12,7 +12,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -106,14 +105,12 @@ private fun PoetDetailScrollableContent(
         Text(
             text = poet.name,
             style = MaterialTheme.typography.displaySmall.copy(
-                fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Bold
             )
         )
         Text(
             text = poet.dynasty,
             style = MaterialTheme.typography.bodyLarge.copy(
-                fontFamily = FontFamily.Serif,
                 color = MaterialTheme.colorScheme.secondary
             ),
             modifier = Modifier.padding(top = 8.dp)
@@ -125,7 +122,6 @@ private fun PoetDetailScrollableContent(
             Text(
                 text = poet.lifetime,
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = FontFamily.Serif,
                     lineHeight = 24.sp,
                     textAlign = TextAlign.Center
                 ),
@@ -138,11 +134,10 @@ private fun PoetDetailScrollableContent(
             Spacer(modifier = Modifier.height(40.dp))
             HorizontalDivider(modifier = Modifier.width(40.dp), thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             Text(
                 text = "· ${desc.type} ·",
                 style = MaterialTheme.typography.titleMedium.copy(
-                    fontFamily = FontFamily.Serif,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold
                 )
@@ -151,7 +146,6 @@ private fun PoetDetailScrollableContent(
             Text(
                 text = desc.content,
                 style = MaterialTheme.typography.bodyLarge.copy(
-                    fontFamily = FontFamily.Serif,
                     lineHeight = 28.sp
                 )
             )
@@ -163,14 +157,13 @@ private fun PoetDetailScrollableContent(
             Text(
                 text = "作品集",
                 style = MaterialTheme.typography.titleLarge.copy(
-                    fontFamily = FontFamily.Serif,
                     fontWeight = FontWeight.Bold
                 ),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Start
             )
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             poems.forEach { userPoem ->
                 PoemPreviewCard(
                     userPoem = userPoem,
@@ -179,7 +172,7 @@ private fun PoetDetailScrollableContent(
                 Spacer(modifier = Modifier.height(12.dp))
             }
         }
-        
+
         Spacer(modifier = Modifier.height(48.dp))
     }
 }

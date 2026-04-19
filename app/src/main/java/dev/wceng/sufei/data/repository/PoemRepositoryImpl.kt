@@ -105,11 +105,10 @@ class PoemRepositoryImpl @Inject constructor(
         return userPreferencesDataSource.userPreferencesFlow
             .flatMapLatest { prefs ->
                 val now = System.currentTimeMillis()
-//                val tenMinutesInMillis = 10 * 60 * 1000L
-                val tenMinutesInMillis = 6 * 1000L
+                // 建议间隔：1 小时 (3600000 毫秒)
+                val refreshInterval = 60 * 60 * 1000L
 
-                // 判断是否需要更新：没有 ID 或 距离上次更新超过 10 分钟
-                if (prefs.dailyPoemId.isEmpty() || (now - prefs.lastUpdateMillis > tenMinutesInMillis)) {
+                if (prefs.dailyPoemId.isEmpty() || (now - prefs.lastUpdateMillis > refreshInterval)) {
                     flow {
                         val newPoemEntity = poemDao.getHighQualityRandomPoem().firstOrNull() 
                             ?: poemDao.getRandomPoem().firstOrNull()

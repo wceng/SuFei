@@ -11,7 +11,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -65,7 +64,7 @@ fun CollectionContent(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { 
-                    Text("枕边", fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold) 
+                    Text("枕边", fontWeight = FontWeight.Bold) 
                 }
             )
         },
@@ -120,14 +119,12 @@ fun FavoritePoemItem(
                 Text(
                     text = poem.title,
                     style = MaterialTheme.typography.titleMedium.copy(
-                        fontFamily = FontFamily.Serif,
                         fontWeight = FontWeight.Bold
                     )
                 )
                 Text(
                     text = "${poem.dynasty} · ${poem.author}",
                     style = MaterialTheme.typography.bodySmall.copy(
-                        fontFamily = FontFamily.Serif,
                         color = MaterialTheme.colorScheme.primary
                     ),
                     modifier = Modifier.padding(vertical = 4.dp)
@@ -135,7 +132,6 @@ fun FavoritePoemItem(
                 Text(
                     text = poem.content.replace("\n", " "),
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        fontFamily = FontFamily.Serif,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     ),
                     maxLines = 1,
@@ -161,14 +157,12 @@ fun EmptyCollectionState(modifier: Modifier = Modifier) {
             Text(
                 text = "暂无枕边书",
                 style = MaterialTheme.typography.headlineSmall.copy(
-                    fontFamily = FontFamily.Serif,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
                 )
             )
             Text(
                 text = "且向万卷求",
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = FontFamily.Serif,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f)
                 ),
                 modifier = Modifier.padding(top = 8.dp)

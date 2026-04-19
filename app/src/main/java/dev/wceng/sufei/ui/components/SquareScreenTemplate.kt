@@ -27,7 +27,6 @@ fun SquareScreenTemplate(
                 title = {
                     Text(
                         text = title,
-                        fontFamily = FontFamily.Serif
                     )
                 },
                 navigationIcon = {
@@ -60,7 +59,6 @@ fun SquareScreenTemplate(
                         label = {
                             Text(
                                 text = item,
-                                fontFamily = FontFamily.Serif
                             )
                         },
                         colors = SuggestionChipDefaults.suggestionChipColors(
