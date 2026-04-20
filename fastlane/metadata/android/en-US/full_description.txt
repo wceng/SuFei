@@ -1,0 +1,12 @@
+SuFei (素扉) is a minimalist application dedicated to the immersive reading of traditional Chinese poetry. Designed with the philosophy of "Simple Elegance" (素) and "Opening the Door to Literature" (扉), it provides a digital space free from advertisements and social distractions.
+
+Key Features:
+
+- **Immersive Reading**: A refined layout optimized for classical texts, supporting built-in high-quality serif fonts (Noto Serif SC) and a traditional paper-like reading feel across all Android versions.
+- **Daily Encounters**: Discover a curated piece of poetry every hour. Our smart algorithm extracts the most evocative and semantically complete lines, presented in a beautiful vertical layout.
+- **Comprehensive Library**: Browse through a vast collection with a structured filtering system by dynasty, tune name (Ci-pai), and thematic tags.
+- **Personal Collection**: Save your favorite pieces to your "Bedside" collection for quiet reflection at any time.
+- **Genre Awareness**: Intelligent recognition of different styles (Shi, Ci, Qu), automatically tailoring the extraction and display logic to capture the soul of each genre.
+- **Modern Experience**: Fully built with Jetpack Compose and Navigation 3, featuring fluid crossfade transitions and native support for Android 13+ predictive back gestures.
+
+Experience the eternal beauty of classical Chinese literature in its purest form with SuFei.

@@ -1,0 +1,7 @@
+Initial release of SuFei (素扉).
+- Immersive reading experience with high-quality built-in serif fonts.
+- Hourly curated poetry recommendations with an intelligent extraction algorithm.
+- Comprehensive library exploration with filtering by dynasty, tune name, and tags.
+- Personal "Bedside" collection to save and revisit your favorite poems.
+- Elegant traditional vertical layout for daily inspirations.
+- Built with modern Android technologies, supporting predictive back gestures.
