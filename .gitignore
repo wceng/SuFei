@@ -13,5 +13,7 @@
 .externalNativeBuild
 .cxx
 local.properties
-echo "*.apk" >> .gitignore
-echo "app/release/" >> .gitignore
+
+# APKs
+*.apk
+app/release/
