@@ -1,2 +1,2 @@
 /build
-/src/main/assets/*.jsonl
+#/src/main/assets/*.jsonl

@@ -10,6 +10,14 @@ import androidx.compose.ui.unit.sp
  * 统一使用内置的 NotoSerifSC (思源宋体)，确保在所有 Android 版本及厂商设备上显示效果一致。
  */
 val Typography = Typography(
+    // 用于启动页 Logo
+    displayLarge = TextStyle(
+        fontFamily = NotoSerifSC,
+        fontWeight = FontWeight.Light,
+        fontSize = 57.sp,
+        lineHeight = 64.sp,
+        letterSpacing = (-0.25).sp
+    ),
     // 用于详情页诗词正文
     displaySmall = TextStyle(
         fontFamily = NotoSerifSC,

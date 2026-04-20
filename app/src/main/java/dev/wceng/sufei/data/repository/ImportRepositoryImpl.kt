@@ -52,7 +52,7 @@ class ImportRepositoryImpl @Inject constructor(
                 importTunes()
                 importPoets()
                 
-                // 2. 导入诗词库
+                // 2. 导入诗词库 (分片导入)
                 importPoems()
                 
                 _importState.value = ImportState.Success
@@ -71,12 +71,14 @@ class ImportRepositoryImpl @Inject constructor(
             reader.useLines { lines ->
                 lines.forEach { line ->
                     if (line.isNotBlank()) {
-                        val tag = json.decodeFromString<Tag>(line)
-                        tagsToInsert.add(tag.toEntity())
-                        if (tagsToInsert.size >= 500) {
-                            tagDao.insertTags(tagsToInsert.toList())
-                            tagsToInsert.clear()
-                        }
+                        try {
+                            val tag = json.decodeFromString<Tag>(line)
+                            tagsToInsert.add(tag.toEntity())
+                            if (tagsToInsert.size >= 500) {
+                                tagDao.insertTags(tagsToInsert.toList())
+                                tagsToInsert.clear()
+                            }
+                        } catch (e: Exception) {}
                     }
                 }
             }
@@ -95,12 +97,14 @@ class ImportRepositoryImpl @Inject constructor(
             reader.useLines { lines ->
                 lines.forEach { line ->
                     if (line.isNotBlank()) {
-                        val tune = json.decodeFromString<Tune>(line)
-                        tunesToInsert.add(tune.toEntity())
-                        if (tunesToInsert.size >= 200) {
-                            tuneDao.insertTunes(tunesToInsert.toList())
-                            tunesToInsert.clear()
-                        }
+                        try {
+                            val tune = json.decodeFromString<Tune>(line)
+                            tunesToInsert.add(tune.toEntity())
+                            if (tunesToInsert.size >= 200) {
+                                tuneDao.insertTunes(tunesToInsert.toList())
+                                tunesToInsert.clear()
+                            }
+                        } catch (e: Exception) {}
                     }
                 }
             }
@@ -137,33 +141,42 @@ class ImportRepositoryImpl @Inject constructor(
     }
 
     private suspend fun importPoems() {
-        val inputStream = context.assets.open("poems.jsonl")
         val totalEstimated = 200000 
         var currentCount = 0
-        
-        val reader = BufferedReader(InputStreamReader(inputStream))
         val entitiesToInsert = mutableListOf<dev.wceng.sufei.data.local.room.entity.PoemEntity>()
 
-        reader.useLines { lines ->
-            lines.forEach { line ->
-                if (line.isNotBlank()) {
-                    try {
-                        val poem = json.decodeFromString<Poem>(line)
-                        entitiesToInsert.add(poem.toEntity())
-                        
-                        currentCount++
-                        if (entitiesToInsert.size >= 1000) {
-                            poemDao.insertPoems(entitiesToInsert.toList())
-                            entitiesToInsert.clear()
-                            
-                            val progress = (currentCount.toFloat() / totalEstimated).coerceAtMost(0.99f)
-                            _importState.value = ImportState.Importing(progress)
+        // 依次读取 5 个分片文件
+        for (i in 0..4) {
+            try {
+                val inputStream = context.assets.open("poems_$i.jsonl")
+                val reader = BufferedReader(InputStreamReader(inputStream))
+                
+                reader.useLines { lines ->
+                    lines.forEach { line ->
+                        if (line.isNotBlank()) {
+                            try {
+                                val poem = json.decodeFromString<Poem>(line)
+                                entitiesToInsert.add(poem.toEntity())
+                                
+                                currentCount++
+                                if (entitiesToInsert.size >= 1000) {
+                                    poemDao.insertPoems(entitiesToInsert.toList())
+                                    entitiesToInsert.clear()
+                                    
+                                    val progress = (currentCount.toFloat() / totalEstimated).coerceAtMost(0.99f)
+                                    _importState.value = ImportState.Importing(progress)
+                                }
+                            } catch (e: Exception) {}
                         }
-                    } catch (e: Exception) {}
+                    }
                 }
+            } catch (e: Exception) {
+                // 如果某个分片文件不存在，跳过继续下一个
+                continue
             }
         }
 
+        // 插入最后剩余的数据
         if (entitiesToInsert.isNotEmpty()) {
             poemDao.insertPoems(entitiesToInsert)
         }

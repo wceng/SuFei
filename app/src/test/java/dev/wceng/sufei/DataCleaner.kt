@@ -48,7 +48,7 @@ class DataCleaner {
     private fun cleanField(text: String?, type: String): String? {
         if (text == null) return null
         var result = text.replace("　", " ").trim()
-        
+
         // 1. 移除常见前缀
         val prefixes = when (type) {
             "notes" -> listOf("注释", "译文及注释")
@@ -69,7 +69,7 @@ class DataCleaner {
                 result = result.substringBefore(marker).trim()
             }
         }
-        
+
         // 3. 再次进行段落工整化处理
         return if (result.isEmpty()) null else cleanContent(result)
     }
@@ -77,27 +77,28 @@ class DataCleaner {
     @Test
     fun cleanPoetryData() {
         val inputPath = "C:\\Users\\Wceng\\Desktop\\poems\\gushiwen-cn-200k.jsonl"
-        val outputPath = "D:/Code/Android/SuFei/app/src/main/assets/poems.jsonl"
-        val tagsOutputPath = "D:/Code/Android/SuFei/app/src/main/assets/tags.jsonl"
-        val dynastiesOutputPath = "D:/Code/Android/SuFei/app/src/main/assets/dynasties.jsonl"
+        val basePath = "D:/Code/Android/SuFei/app/src/main/assets/"
+        val tagsOutputPath = "${basePath}tags.jsonl"
+        val dynastiesOutputPath = "${basePath}dynasties.jsonl"
 
         val inputFile = File(inputPath)
-        val outputFile = File(outputPath)
-        
-        outputFile.parentFile?.mkdirs()
         if (!inputFile.exists()) return
+        File(basePath).mkdirs()
 
-        println("开始深度清洗数据（优化译文与工整度）...")
+        println("开始清洗并分片存储数据...")
         val allTags = mutableSetOf<String>()
         val allDynasties = mutableSetOf<String>()
         var count = 0
 
-        outputFile.bufferedWriter().use { writer ->
+        // 创建 5 个分片文件的写入流
+        val writers = (0..4).map { File("${basePath}poems_$it.jsonl").bufferedWriter() }
+
+        try {
             inputFile.bufferedReader().forEachLine { line ->
                 if (line.isBlank()) return@forEachLine
                 try {
                     val raw = json.decodeFromString<RawPoem>(line)
-                    
+
                     // 策略：优先从 content_json["译文及注释"] 提取，因为 raw.fanyi 往往不完整
                     val combinedInfo = raw.content_json?.get("译文及注释")
                     var finalTranslation = raw.fanyi
@@ -126,6 +127,8 @@ class DataCleaner {
                         background = cleanField(raw.content_json?.get("创作背景"), "intro")
                     )
 
+                    // 均匀分发到 5 个文件
+                    val writer = writers[count % 5]
                     writer.write(json.encodeToString(cleanedPoem))
                     writer.newLine()
                     
@@ -137,16 +140,17 @@ class DataCleaner {
                     if (count % 10000 == 0) println("已处理 $count 首...")
                 } catch (e: Exception) {}
             }
+        } finally {
+            writers.forEach { it.close() }
         }
 
-        // 保存标签和朝代文件 (代码略，保持之前逻辑)
         saveMetadata(allTags, allDynasties, tagsOutputPath, dynastiesOutputPath)
-        println("清洗完成！共处理 $count 首。")
+        println("清洗完成！已分片存入 5 个文件，共 $count 首。")
     }
 
     private fun saveMetadata(tags: Set<String>, dynasties: Set<String>, tagPath: String, dynastyPath: String) {
         File(tagPath).bufferedWriter().use { w -> 
-            tags.filter { it != "离别｜抒情｜伤感｜怀人" }.sorted().forEach { w.write("{\"name\":\"$it\"}\n") } 
+            tags.filter { it != "离别｜抒情｜伤感｜怀人" }.sorted().forEach { w.write("{\"name\":\"$it\"}\n") }
         }
         File(dynastyPath).bufferedWriter().use { w -> 
             dynasties.sorted().forEach { w.write("{\"name\":\"$it\"}\n") } 
