@@ -34,6 +34,14 @@ val Typography = Typography(
         lineHeight = 26.sp,
         letterSpacing = 0.sp
     ),
+    // 用于次级标题或占位屏大文字
+    headlineSmall = TextStyle(
+        fontFamily = NotoSerifSC,
+        fontWeight = FontWeight.Medium,
+        fontSize = 20.sp,
+        lineHeight = 28.sp,
+        letterSpacing = 0.sp
+    ),
     // 用于小标题（如：注释、赏析）
     titleMedium = TextStyle(
         fontFamily = NotoSerifSC,
