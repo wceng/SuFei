@@ -38,11 +38,11 @@ android {
     buildFeatures {
         compose = true
     }
-//    kotlinOptions {
-//        jvmTarget = "11"
-//    }
 
-
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
 }
 
 
@@ -51,9 +51,6 @@ kotlin {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
-
-
-
 
 dependencies {
     implementation(libs.androidx.core.ktx)
