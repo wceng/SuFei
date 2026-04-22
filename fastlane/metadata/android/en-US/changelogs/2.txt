@@ -1,4 +1,4 @@
-- Added daily poem updates and global navigation transitions.
-- Improved font handling for Noto Serif SC.
-- Enhanced Explore screen with better filtering.
-- Performance improvements and bug fixes.
+Added daily poem updates and global navigation transitions.
+Improved font handling for Noto Serif SC.
+Enhanced Explore screen with better filtering.
+Performance improvements and bug fixes.
