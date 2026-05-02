@@ -15,6 +15,7 @@ import dev.wceng.sufei.ui.screens.splash.SplashScreen
 import dev.wceng.sufei.ui.screens.splash.SplashViewModel
 import dev.wceng.sufei.ui.theme.SuFeiTheme
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import dev.wceng.sufei.ui.navigation.EntryProviderInstaller
 import dev.wceng.sufei.ui.navigation.Navigator
 import javax.inject.Inject
@@ -35,6 +36,7 @@ class MainActivity : ComponentActivity() {
     lateinit var userPreferencesRepository: UserPreferencesRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {

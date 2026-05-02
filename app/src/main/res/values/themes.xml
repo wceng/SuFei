@@ -2,4 +2,16 @@
 <resources>
 
     <style name="Theme.SuFei" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- 闪屏主题 -->
+    <style name="Theme.SuFei.Starting" parent="Theme.SplashScreen">
+        <!-- 闪屏背景色，支持亮暗色模式自动切换 -->
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <!-- 闪屏图标 -->
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <!-- 动画时长 (仅 API 31+) -->
+        <item name="windowSplashScreenAnimationDuration">200</item>
+        <!-- 闪屏结束后的应用主题 -->
+        <item name="postSplashScreenTheme">@style/Theme.SuFei</item>
+    </style>
 </resources>

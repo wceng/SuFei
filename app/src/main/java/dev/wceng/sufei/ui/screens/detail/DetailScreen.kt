@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,8 +16,10 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -31,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -56,12 +60,25 @@ fun DetailScreen(
     viewModel: DetailViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val isTtsPlaying by viewModel.isTtsPlaying.collectAsState()
+    val currentSentenceIndex by viewModel.currentSentenceIndex.collectAsState()
+
+    DisposableEffect(viewModel) {
+        onDispose {
+            viewModel.stopTts()
+        }
+    }
 
     DetailContent(
         uiState = uiState,
+        isTtsPlaying = isTtsPlaying,
+        currentSentenceIndex = currentSentenceIndex,
         onBack = onBack,
         onFavoriteToggle = { isFavorite ->
             viewModel.toggleFavorite(isFavorite)
+        },
+        onTtsToggle = { sentences ->
+            viewModel.toggleTts(sentences)
         }
     )
 }
@@ -70,8 +87,11 @@ fun DetailScreen(
 @Composable
 fun DetailContent(
     uiState: DetailUiState,
+    isTtsPlaying: Boolean,
+    currentSentenceIndex: Int?,
     onBack: () -> Unit,
-    onFavoriteToggle: (Boolean) -> Unit
+    onFavoriteToggle: (Boolean) -> Unit,
+    onTtsToggle: (List<String>) -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
@@ -88,6 +108,21 @@ fun DetailContent(
                 actions = {
                     if (uiState is DetailUiState.Success) {
                         val userPoem = uiState.userPoem
+                        val poem = userPoem.poem
+                        IconButton(onClick = {
+                            val paragraphs = poem.content.split("\n")
+                            val verses = paragraphs.flatMap { p ->
+                                p.split(Regex("(?<=[，。！？；])")).filter { it.isNotBlank() }
+                            }
+                            val ttsSentences = listOf(poem.title, poem.dynasty, poem.author) + verses
+                            onTtsToggle(ttsSentences)
+                        }) {
+                            Icon(
+                                imageVector = if (isTtsPlaying) Icons.Default.Stop else Icons.AutoMirrored.Filled.VolumeUp,
+                                contentDescription = if (isTtsPlaying) "停止朗读" else "朗读",
+                                tint = if (isTtsPlaying) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                            )
+                        }
                         IconButton(onClick = { onFavoriteToggle(!userPoem.isFavorite) }) {
                             Icon(
                                 imageVector = if (userPoem.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
@@ -119,6 +154,7 @@ fun DetailContent(
                     PoemReader(
                         userPoem = uiState.userPoem,
                         userPreferences = uiState.userPreferences,
+                        currentSentenceIndex = currentSentenceIndex
                     )
                 }
                 is DetailUiState.Error -> {
@@ -138,6 +174,7 @@ fun DetailContent(
 fun PoemReader(
     userPoem: UserPoem,
     userPreferences: UserPreferences,
+    currentSentenceIndex: Int?,
     modifier: Modifier = Modifier
 ) {
     val poem = userPoem.poem
@@ -148,27 +185,44 @@ fun PoemReader(
             .padding(horizontal = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 标题：自动继承全局 headlineMedium 的字体
+        // 标题
         Text(
             text = poem.title,
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.Bold,
                 fontSize = (20 * userPreferences.fontSizeMultiplier).sp,
-                letterSpacing = 2.sp
+                letterSpacing = 2.sp,
+                color = if (currentSentenceIndex == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
             ),
             textAlign = TextAlign.Center
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 朝代作者：自动继承全局 bodyLarge 的字体
-        Text(
-            text = "${poem.dynasty} · ${poem.author}",
-            style = MaterialTheme.typography.bodyLarge.copy(
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                fontSize = (14 * userPreferences.fontSizeMultiplier).sp
+        // 朝代作者
+        Row {
+            Text(
+                text = poem.dynasty,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    color = if (currentSentenceIndex == 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    fontSize = (14 * userPreferences.fontSizeMultiplier).sp
+                )
             )
-        )
+            Text(
+                text = " · ",
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    fontSize = (14 * userPreferences.fontSizeMultiplier).sp
+                )
+            )
+            Text(
+                text = poem.author,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    color = if (currentSentenceIndex == 2) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    fontSize = (14 * userPreferences.fontSizeMultiplier).sp
+                )
+            )
+        }
 
         // 标签展示 (TagCloud)
         if (poem.tags.isNotEmpty()) {
@@ -213,10 +267,10 @@ fun PoemReader(
 
         if (isSelectionEnabled) {
             SelectionContainer {
-                PoemBody(paragraphs, userPreferences)
+                PoemBody(paragraphs, userPreferences, currentSentenceIndex)
             }
         } else {
-            PoemBody(paragraphs, userPreferences)
+            PoemBody(paragraphs, userPreferences, currentSentenceIndex)
         }
         
         if (!poem.notes.isNullOrBlank() || !poem.translation.isNullOrBlank() || !poem.intro.isNullOrBlank() || !poem.background.isNullOrBlank()) {
@@ -236,7 +290,8 @@ fun PoemReader(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun PoemBody(paragraphs: List<String>, userPreferences: UserPreferences) {
+private fun PoemBody(paragraphs: List<String>, userPreferences: UserPreferences, currentSentenceIndex: Int?) {
+    var globalVerseIndex = 3 // 从 3 开始，因为 0:标题, 1:朝代, 2:作者
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         paragraphs.forEach { paragraph ->
             FlowRow(
@@ -245,17 +300,20 @@ private fun PoemBody(paragraphs: List<String>, userPreferences: UserPreferences)
             ) {
                 val verses = paragraph.split(Regex("(?<=[，。！？；])")).filter { it.isNotBlank() }
                 verses.forEach { verse ->
+                    val isHighlight = currentSentenceIndex == globalVerseIndex
                     Text(
                         text = verse.trim(),
                         style = MaterialTheme.typography.displaySmall.copy(
-                            fontWeight = FontWeight.Light,
+                            fontWeight = if (isHighlight) FontWeight.Normal else FontWeight.Light,
                             fontSize = (18 * userPreferences.fontSizeMultiplier).sp,
                             lineHeight = (32 * userPreferences.lineHeightMultiplier).sp,
-                            letterSpacing = 2.sp
+                            letterSpacing = 2.sp,
+                            color = if (isHighlight) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
                         ),
                         softWrap = false,
                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp)
                     )
+                    globalVerseIndex++
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -313,8 +371,11 @@ fun DetailContentPreview() {
                 ),
                 userPreferences = UserPreferences(fontSizeMultiplier = 1.0f, lineHeightMultiplier = 1.0f)
             ),
+            isTtsPlaying = false,
+            currentSentenceIndex = null,
             onBack = {},
-            onFavoriteToggle = {}
+            onFavoriteToggle = {},
+            onTtsToggle = {}
         )
     }
 }

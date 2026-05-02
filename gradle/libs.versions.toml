@@ -20,6 +20,7 @@ navigation3 = "1.0.0"
 hiltNavigationCompose = "1.2.0"
 adaptiveNavigationSuite = "1.4.0"
 androidxLifecycleViewModelNavigation3 = "2.10.0"
+splashscreen = "1.2.0"
 
 
 [libraries]
@@ -54,6 +55,7 @@ hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", v
 androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3" }
 androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

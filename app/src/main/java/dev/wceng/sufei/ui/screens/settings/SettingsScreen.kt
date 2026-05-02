@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import dev.wceng.sufei.BuildConfig
 import dev.wceng.sufei.data.model.UserPreferences
 import dev.wceng.sufei.ui.theme.SuFeiTheme
 
@@ -91,7 +92,7 @@ fun SettingsContent(
             // 更多信息
             Spacer(modifier = Modifier.height(48.dp))
             Text(
-                text = "素扉 v1.0",
+                text = "素扉 v${BuildConfig.VERSION_NAME}",
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)

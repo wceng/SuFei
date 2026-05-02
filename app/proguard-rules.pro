@@ -19,3 +19,11 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Protobuf & DataStore
+-keep class * extends com.google.protobuf.GeneratedMessageLite { *; }
+-keep class * extends com.google.protobuf.MessageLite { *; }
+-keep class com.google.protobuf.GeneratedMessageLite { *; }
+
+# Keep DataStore serializers
+-keep class * implements androidx.datastore.core.Serializer { *; }

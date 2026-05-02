@@ -10,6 +10,7 @@ import dev.wceng.sufei.data.model.UserPoem
 import dev.wceng.sufei.data.model.UserPreferences
 import dev.wceng.sufei.data.repository.PoemRepository
 import dev.wceng.sufei.data.repository.UserPreferencesRepository
+import dev.wceng.sufei.data.tts.TtsManager
 import dev.wceng.sufei.ui.navigation.Detail
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -18,8 +19,12 @@ import kotlinx.coroutines.launch
 class DetailViewModel @AssistedInject constructor(
     private val poemRepository: PoemRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
+    private val ttsManager: TtsManager,
     @Assisted val detail: Detail
 ) : ViewModel() {
+
+    val isTtsPlaying = ttsManager.isPlaying
+    val currentSentenceIndex = ttsManager.currentSentenceIndex
 
     /**
      * 遵循 Now in Android 风格：通过组合多个数据源生成 UI 状态流
@@ -43,6 +48,23 @@ class DetailViewModel @AssistedInject constructor(
         viewModelScope.launch {
             userPreferencesRepository.toggleFavorite(detail.id, isFavorite)
         }
+    }
+
+    fun toggleTts(sentences: List<String>) {
+        if (isTtsPlaying.value) {
+            ttsManager.stop()
+        } else {
+            ttsManager.speak(sentences)
+        }
+    }
+
+    fun stopTts() {
+        ttsManager.stop()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        ttsManager.release()
     }
 
     @AssistedFactory
