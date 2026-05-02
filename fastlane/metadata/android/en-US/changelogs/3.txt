@@ -1,0 +1,6 @@
+- Added system TTS support for poem narration with real-time sentence highlighting in the detail screen.
+- Integrated official SplashScreen library for smooth transitions between light and dark modes.
+- Optimized navigation logic to preserve page state (e.g., scroll position) when switching between top-level destinations.
+- Enabled R8 minification and resource shrinking, and optimized ProGuard rules for DataStore and Protobuf.
+- Updated version to 1.2.0 and synchronized the display on the settings page.
+- Added a package name suffix for debug builds to support side-by-side installation with the release version.
