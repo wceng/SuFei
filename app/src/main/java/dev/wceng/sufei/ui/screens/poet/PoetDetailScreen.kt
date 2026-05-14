@@ -1,15 +1,16 @@
 package dev.wceng.sufei.ui.screens.poet
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -21,13 +22,19 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import dev.wceng.sufei.data.model.Poet
 import dev.wceng.sufei.data.model.PoetDescription
 import dev.wceng.sufei.data.model.UserPoem
-import dev.wceng.sufei.ui.screens.explore.PoemPreviewCard
+import dev.wceng.sufei.ui.components.PoemPreviewCard
 import dev.wceng.sufei.ui.theme.SuFeiTheme
+
+enum class PoetDetailTab(val title: String) {
+    INTRODUCTION("介绍"),
+    WORKS("作品")
+}
 
 @Composable
 fun PoetDetailScreen(
     onBack: () -> Unit,
     onPoemClick: (String) -> Unit,
+    onAllWorksClick: (String) -> Unit,
     viewModel: PoetDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -35,7 +42,8 @@ fun PoetDetailScreen(
     PoetDetailContent(
         uiState = uiState,
         onBack = onBack,
-        onPoemClick = onPoemClick
+        onPoemClick = onPoemClick,
+        onAllWorksClick = onAllWorksClick
     )
 }
 
@@ -44,7 +52,8 @@ fun PoetDetailScreen(
 fun PoetDetailContent(
     uiState: PoetDetailUiState,
     onBack: () -> Unit,
-    onPoemClick: (String) -> Unit
+    onPoemClick: (String) -> Unit,
+    onAllWorksClick: (String) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -73,7 +82,8 @@ fun PoetDetailContent(
                     PoetDetailScrollableContent(
                         poet = uiState.poet,
                         poems = uiState.poems,
-                        onPoemClick = onPoemClick
+                        onPoemClick = onPoemClick,
+                        onAllWorksClick = onAllWorksClick
                     )
                 }
                 is PoetDetailUiState.Error -> {
@@ -92,16 +102,20 @@ fun PoetDetailContent(
 private fun PoetDetailScrollableContent(
     poet: Poet,
     poems: List<UserPoem>,
-    onPoemClick: (String) -> Unit
+    onPoemClick: (String) -> Unit,
+    onAllWorksClick: (String) -> Unit
 ) {
+    var selectedTab by rememberSaveable { mutableStateOf(PoetDetailTab.INTRODUCTION) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(24.dp),
+            .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 头部：姓名与朝代
+        // 1. 公共头部
+        Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = poet.name,
             style = MaterialTheme.typography.displaySmall.copy(
@@ -116,64 +130,143 @@ private fun PoetDetailScrollableContent(
             modifier = Modifier.padding(top = 8.dp)
         )
 
-        // 一句话生平
         if (!poet.lifetime.isNullOrBlank()) {
             Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = poet.lifetime,
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    lineHeight = 24.sp,
+                    lineHeight = 22.sp,
                     textAlign = TextAlign.Center
                 ),
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
         }
 
-        // 详细描述区 (生平、成就等)
-        poet.descriptions.forEach { desc ->
-            Spacer(modifier = Modifier.height(40.dp))
-            HorizontalDivider(modifier = Modifier.width(40.dp), thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
-            Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
-            Text(
-                text = "· ${desc.type} ·",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
+        // 2. 标签切换行 (使用 FilterChip 更加轻量)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            PoetDetailTab.entries.forEach { tab ->
+                FilterChip(
+                    selected = selectedTab == tab,
+                    onClick = { selectedTab = tab },
+                    label = { Text(tab.title) },
+                    modifier = Modifier.padding(horizontal = 8.dp)
                 )
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = desc.content,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    lineHeight = 28.sp
-                )
-            )
-        }
-
-        // 作品区
-        if (poems.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(48.dp))
-            Text(
-                text = "作品集",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Start
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            poems.forEach { userPoem ->
-                PoemPreviewCard(
-                    userPoem = userPoem,
-                    onClick = { onPoemClick(userPoem.poem.id) }
-                )
-                Spacer(modifier = Modifier.height(12.dp))
             }
         }
 
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 3. 根据状态渲染内容
+        when (selectedTab) {
+            PoetDetailTab.INTRODUCTION -> {
+                if (poet.descriptions.isNotEmpty()) {
+                    poet.descriptions.forEach { desc ->
+                        Spacer(modifier = Modifier.height(32.dp))
+                        HorizontalDivider(
+                            modifier = Modifier.width(40.dp),
+                            thickness = 1.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Text(
+                            text = "· ${desc.type} ·",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = desc.content,
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                lineHeight = 28.sp
+                            )
+                        )
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 64.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "暂无介绍数据",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.outline
+                        )
+                    }
+                }
+            }
+            PoetDetailTab.WORKS -> {
+                if (poems.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // 全部作品入口
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onAllWorksClick(poet.name) }
+                            .padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "作品集",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "查看全部",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            )
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = "全部作品",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // 展示作品
+                    poems.forEach { userPoem ->
+                        PoemPreviewCard(
+                            userPoem = userPoem,
+                            onClick = { onPoemClick(userPoem.poem.id) }
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 64.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "暂无作品数据",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.outline
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(64.dp))
     }
 }
 
@@ -193,10 +286,11 @@ fun PoetDetailPreview() {
                         PoetDescription("轶事典故", "李白搁笔的故事...")
                     )
                 ),
-                poems = listOf() // 预览暂不加载作品
+                poems = listOf()
             ),
             onBack = {},
-            onPoemClick = {}
+            onPoemClick = {},
+            onAllWorksClick = {}
         )
     }
 }

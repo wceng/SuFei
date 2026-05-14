@@ -21,6 +21,9 @@ interface PoetDao {
     @Query("SELECT COUNT(*) FROM poets")
     suspend fun getPoetCount(): Int
 
+    @Query("SELECT id FROM poets WHERE name = :name LIMIT 1")
+    suspend fun getPoetIdByName(name: String): String?
+
     @Query("SELECT * FROM poets WHERE name LIKE '%' || :query || '%' LIMIT :limit")
     fun searchPoetsByName(query: String, limit: Int = 20): Flow<List<PoetEntity>>
 }

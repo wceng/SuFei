@@ -16,7 +16,7 @@ enum class MainTab(val title: String, val icon: ImageVector) {
 
 fun MainTab.toRoute(): Any = when (this) {
     MainTab.Home -> Home
-    MainTab.Explore -> Explore
+    MainTab.Explore -> Explore()
     MainTab.Collection -> Collection
     MainTab.Settings -> Settings
 }

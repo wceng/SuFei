@@ -1,6 +1,5 @@
 package dev.wceng.sufei.ui.navigation
 
-import dev.wceng.sufei.ui.screens.explore.SquareType
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -10,7 +9,12 @@ object Splash
 object Home
 
 @Serializable
-object Explore
+data class Explore(
+    val query: String? = null,
+    val tag: String? = null,
+    val tune: String? = null,
+    val dynasty: String? = null
+)
 
 @Serializable
 object Collection
@@ -22,7 +26,7 @@ object Settings
 data class Detail(val id: String)
 
 @Serializable
-data class Square(val type: SquareType)
+data class PoetDetail(val id: String)
 
 @Serializable
-data class PoetDetail(val id: String)
+data class PoetWorks(val poetName: String)

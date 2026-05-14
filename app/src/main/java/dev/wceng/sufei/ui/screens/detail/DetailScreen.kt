@@ -1,5 +1,6 @@
 package dev.wceng.sufei.ui.screens.detail
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -57,6 +59,9 @@ import dev.wceng.sufei.ui.theme.SuFeiTheme
 @Composable
 fun DetailScreen(
     onBack: () -> Unit,
+    onPoetClick: (String) -> Unit,
+    onTagClick: (String) -> Unit,
+    onDynastyClick: (String) -> Unit,
     viewModel: DetailViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -69,11 +74,23 @@ fun DetailScreen(
         }
     }
 
+    // 收集 ViewModel 发射的诗人 ID 并跳转
+    LaunchedEffect(viewModel) {
+        viewModel.poetIdFlow.collect { poetId ->
+            onPoetClick(poetId)
+        }
+    }
+
     DetailContent(
         uiState = uiState,
         isTtsPlaying = isTtsPlaying,
         currentSentenceIndex = currentSentenceIndex,
         onBack = onBack,
+        onPoetClick = { poetName ->
+            viewModel.navigateToPoetByName(poetName)
+        },
+        onTagClick = onTagClick,
+        onDynastyClick = onDynastyClick,
         onFavoriteToggle = { isFavorite ->
             viewModel.toggleFavorite(isFavorite)
         },
@@ -90,6 +107,9 @@ fun DetailContent(
     isTtsPlaying: Boolean,
     currentSentenceIndex: Int?,
     onBack: () -> Unit,
+    onPoetClick: (String) -> Unit,
+    onTagClick: (String) -> Unit,
+    onDynastyClick: (String) -> Unit,
     onFavoriteToggle: (Boolean) -> Unit,
     onTtsToggle: (List<String>) -> Unit
 ) {
@@ -153,6 +173,9 @@ fun DetailContent(
                 is DetailUiState.Success -> {
                     PoemReader(
                         userPoem = uiState.userPoem,
+                        onPoetClick = onPoetClick,
+                        onTagClick = onTagClick,
+                        onDynastyClick = onDynastyClick,
                         userPreferences = uiState.userPreferences,
                         currentSentenceIndex = currentSentenceIndex
                     )
@@ -173,6 +196,9 @@ fun DetailContent(
 @Composable
 fun PoemReader(
     userPoem: UserPoem,
+    onPoetClick: (String) -> Unit,
+    onTagClick: (String) -> Unit,
+    onDynastyClick: (String) -> Unit,
     userPreferences: UserPreferences,
     currentSentenceIndex: Int?,
     modifier: Modifier = Modifier
@@ -206,7 +232,8 @@ fun PoemReader(
                 style = MaterialTheme.typography.bodyLarge.copy(
                     color = if (currentSentenceIndex == 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                     fontSize = (14 * userPreferences.fontSizeMultiplier).sp
-                )
+                ),
+                modifier = Modifier.clickable { onDynastyClick(poem.dynasty) }
             )
             Text(
                 text = " · ",
@@ -220,7 +247,8 @@ fun PoemReader(
                 style = MaterialTheme.typography.bodyLarge.copy(
                     color = if (currentSentenceIndex == 2) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                     fontSize = (14 * userPreferences.fontSizeMultiplier).sp
-                )
+                ),
+                modifier = Modifier.clickable { onPoetClick(poem.author) }
             )
         }
 
@@ -234,7 +262,7 @@ fun PoemReader(
             ) {
                 poem.tags.forEach { tag ->
                     SuggestionChip(
-                        onClick = { },
+                        onClick = { onTagClick(tag) },
                         label = {
                             Text(
                                 text = tag,
@@ -278,10 +306,10 @@ fun PoemReader(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(modifier = Modifier.height(32.dp))
             
-            InterpretationSection(title = "注释", content = poem.notes, multiplier = userPreferences.fontSizeMultiplier)
-            InterpretationSection(title = "译文", content = poem.translation, multiplier = userPreferences.fontSizeMultiplier)
-            InterpretationSection(title = "赏析", content = poem.intro, multiplier = userPreferences.fontSizeMultiplier)
-            InterpretationSection(title = "背景", content = poem.background, multiplier = userPreferences.fontSizeMultiplier)
+            InterpretationSection(title = "注释", content = poem.notes, fontSizeMultiplier = userPreferences.fontSizeMultiplier, lineHeightMultiplier = userPreferences.lineHeightMultiplier)
+            InterpretationSection(title = "译文", content = poem.translation, fontSizeMultiplier = userPreferences.fontSizeMultiplier, lineHeightMultiplier = userPreferences.lineHeightMultiplier)
+            InterpretationSection(title = "赏析", content = poem.intro, fontSizeMultiplier = userPreferences.fontSizeMultiplier, lineHeightMultiplier = userPreferences.lineHeightMultiplier)
+            InterpretationSection(title = "背景", content = poem.background, fontSizeMultiplier = userPreferences.fontSizeMultiplier, lineHeightMultiplier = userPreferences.lineHeightMultiplier)
         }
 
         Spacer(modifier = Modifier.height(64.dp))
@@ -296,6 +324,7 @@ private fun PoemBody(paragraphs: List<String>, userPreferences: UserPreferences,
         paragraphs.forEach { paragraph ->
             FlowRow(
                 horizontalArrangement = Arrangement.Center,
+                verticalArrangement = Arrangement.spacedBy((12 * userPreferences.lineHeightMultiplier).dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 val verses = paragraph.split(Regex("(?<=[，。！？；])")).filter { it.isNotBlank() }
@@ -311,18 +340,18 @@ private fun PoemBody(paragraphs: List<String>, userPreferences: UserPreferences,
                             color = if (isHighlight) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
                         ),
                         softWrap = false,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp)
+                        modifier = Modifier.padding(horizontal = 6.dp)
                     )
                     globalVerseIndex++
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height((16 * userPreferences.lineHeightMultiplier).dp))
         }
     }
 }
 
 @Composable
-fun InterpretationSection(title: String, content: String?, multiplier: Float) {
+fun InterpretationSection(title: String, content: String?, fontSizeMultiplier: Float, lineHeightMultiplier: Float) {
     if (content.isNullOrBlank()) return
     Column(
         modifier = Modifier
@@ -334,15 +363,15 @@ fun InterpretationSection(title: String, content: String?, multiplier: Float) {
             style = MaterialTheme.typography.titleMedium.copy(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
-                fontSize = (16 * multiplier).sp
+                fontSize = (16 * fontSizeMultiplier).sp
             )
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = content,
             style = MaterialTheme.typography.bodyLarge.copy(
-                lineHeight = (24 * multiplier).sp,
-                fontSize = (14 * multiplier).sp
+                lineHeight = (24 * fontSizeMultiplier * lineHeightMultiplier).sp,
+                fontSize = (14 * fontSizeMultiplier).sp
             )
         )
     }
@@ -374,6 +403,9 @@ fun DetailContentPreview() {
             isTtsPlaying = false,
             currentSentenceIndex = null,
             onBack = {},
+            onPoetClick = {},
+            onTagClick = {},
+            onDynastyClick = {},
             onFavoriteToggle = {},
             onTtsToggle = {}
         )

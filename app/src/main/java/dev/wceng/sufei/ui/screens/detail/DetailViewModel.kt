@@ -12,8 +12,11 @@ import dev.wceng.sufei.data.repository.PoemRepository
 import dev.wceng.sufei.data.repository.UserPreferencesRepository
 import dev.wceng.sufei.data.tts.TtsManager
 import dev.wceng.sufei.ui.navigation.Detail
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @HiltViewModel(assistedFactory = DetailViewModel.Factory::class)
 class DetailViewModel @AssistedInject constructor(
@@ -25,6 +28,12 @@ class DetailViewModel @AssistedInject constructor(
 
     val isTtsPlaying = ttsManager.isPlaying
     val currentSentenceIndex = ttsManager.currentSentenceIndex
+
+    /**
+     * 发射诗人 ID 的渠道
+     */
+    private val _poetIdChannel = Channel<String>(Channel.BUFFERED)
+    val poetIdFlow: Flow<String> = _poetIdChannel.receiveAsFlow()
 
     /**
      * 遵循 Now in Android 风格：通过组合多个数据源生成 UI 状态流
@@ -43,6 +52,18 @@ class DetailViewModel @AssistedInject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = DetailUiState.Loading
     )
+
+    /**
+     * 通过诗人名称查询 ID，并通过 Channel 发射
+     */
+    fun navigateToPoetByName(poetName: String) {
+        viewModelScope.launch {
+            val poetId = poemRepository.getPoetIdByName(poetName)
+            if (poetId != null) {
+                _poetIdChannel.send(poetId)
+            }
+        }
+    }
 
     fun toggleFavorite(isFavorite: Boolean) {
         viewModelScope.launch {
@@ -64,6 +85,7 @@ class DetailViewModel @AssistedInject constructor(
 
     override fun onCleared() {
         super.onCleared()
+        _poetIdChannel.close()
         ttsManager.release()
     }
 

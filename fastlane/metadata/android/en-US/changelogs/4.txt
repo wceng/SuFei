@@ -1,0 +1,5 @@
+- Introduced a unified search filter drawer in the Explore screen to replace the category square for a smoother filtering experience.
+- Added support for searching selected text from other apps via the system "Process Text" menu.
+- Added a new Poet Works screen and refactored the Poet Detail page with a tabbed layout for quick switching between introduction and works.
+- Enabled direct navigation from poem details to related explore results (tags or dynasties) and poet profiles.
+- Enhanced search and navigation by supporting direct jumps from poet names to their detail screens.

@@ -182,6 +182,10 @@ class PoemRepositoryImpl @Inject constructor(
             .flowOn(Dispatchers.IO)
     }
 
+    override suspend fun getPoetIdByName(name: String): String? {
+        return poetDao.getPoetIdByName(name)
+    }
+
     override fun getPoemsByPoet(authorName: String): Flow<List<UserPoem>> {
         return combine(
             poemDao.getPoemsByAuthor(authorName, limit = 20),

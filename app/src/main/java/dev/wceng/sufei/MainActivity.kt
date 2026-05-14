@@ -1,5 +1,6 @@
 package dev.wceng.sufei
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,6 +18,7 @@ import dev.wceng.sufei.ui.theme.SuFeiTheme
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import dev.wceng.sufei.ui.navigation.EntryProviderInstaller
+import dev.wceng.sufei.ui.navigation.Explore
 import dev.wceng.sufei.ui.navigation.Navigator
 import javax.inject.Inject
 
@@ -39,6 +41,9 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        handleIntent(intent)
+
         setContent {
             // 直接从仓库收集用户偏好流
             val userPreferences by userPreferencesRepository.userPreferences
@@ -60,6 +65,18 @@ class MainActivity : ComponentActivity() {
                     SplashScreen(onInitComplete = {})
                 }
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        if (intent?.action == Intent.ACTION_PROCESS_TEXT) {
+            val query = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT)
+            navigator.goTo(Explore(query = query))
         }
     }
 }

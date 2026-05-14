@@ -1,19 +1,22 @@
 package dev.wceng.sufei.ui.screens.explore
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -22,27 +25,33 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreHoriz
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -51,7 +60,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -61,15 +69,21 @@ import dev.wceng.sufei.data.model.SearchResult
 import dev.wceng.sufei.data.model.Tag
 import dev.wceng.sufei.data.model.Tune
 import dev.wceng.sufei.data.model.UserPoem
+import dev.wceng.sufei.ui.components.PoemPreviewCard
+import dev.wceng.sufei.ui.components.PoetPreviewCard
 import dev.wceng.sufei.ui.theme.SuFeiTheme
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
+enum class DrawerType {
+    TAG, TUNE
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExploreScreen(
     onPoemClick: (String) -> Unit,
     onPoetClick: (String) -> Unit,
-    onAllTagsClick: () -> Unit,
-    onAllTunesClick: () -> Unit,
     viewModel: ExploreViewModel = hiltViewModel()
 ) {
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -80,23 +94,133 @@ fun ExploreScreen(
     val recommendedTags by viewModel.recommendedTags.collectAsState()
     val recommendedTunes by viewModel.recommendedTunes.collectAsState()
 
-    ExploreContent(
-        searchQuery = searchQuery,
-        onSearchQueryChange = viewModel::onSearchQueryChange,
-        selectedDynasty = selectedDynasty,
-        onDynastySelect = viewModel::onDynastySelect,
-        selectedTag = selectedTag,
-        onTagSelect = viewModel::onTagSelect,
-        selectedTune = selectedTune,
-        onTuneSelect = viewModel::onTuneSelect,
-        recommendedTags = recommendedTags,
-        recommendedTunes = recommendedTunes,
-        searchResult = searchResult,
-        onPoemClick = onPoemClick,
-        onPoetClick = onPoetClick,
-        onAllTagsClick = onAllTagsClick,
-        onAllTunesClick = onAllTunesClick,
-    )
+    val allTags by viewModel.allTags.collectAsState()
+    val allTunes by viewModel.allTunes.collectAsState()
+    val drawerSearchQuery by viewModel.drawerSearchQuery.collectAsState()
+
+    var showDrawer by remember { mutableStateOf(false) }
+    var drawerType by remember { mutableStateOf(DrawerType.TAG) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        ExploreContent(
+            searchQuery = searchQuery,
+            onSearchQueryChange = viewModel::onSearchQueryChange,
+            selectedDynasty = selectedDynasty,
+            onDynastySelect = viewModel::onDynastySelect,
+            selectedTag = selectedTag,
+            onTagSelect = viewModel::onTagSelect,
+            selectedTune = selectedTune,
+            onTuneSelect = viewModel::onTuneSelect,
+            recommendedTags = recommendedTags,
+            recommendedTunes = recommendedTunes,
+            searchResult = searchResult,
+            onPoemClick = onPoemClick,
+            onPoetClick = onPoetClick,
+            onAllTagsClick = {
+                drawerType = DrawerType.TAG
+                showDrawer = true
+            },
+            onAllTunesClick = {
+                drawerType = DrawerType.TUNE
+                showDrawer = true
+            },
+        )
+
+        if (showDrawer) {
+            ModalBottomSheet(
+                onDismissRequest = {
+                    showDrawer = false
+                    viewModel.onDrawerSearchQueryChange("")
+                },
+                sheetState = sheetState,
+            ) {
+                ExploreDrawerContent(
+                    title = if (drawerType == DrawerType.TAG) "标签广场" else "词牌广场",
+                    query = drawerSearchQuery,
+                    onQueryChange = viewModel::onDrawerSearchQueryChange,
+                    items = if (drawerType == DrawerType.TAG) allTags else allTunes,
+                    selectedItem = if (drawerType == DrawerType.TAG) selectedTag else selectedTune,
+                    onItemClick = { item ->
+                        if (drawerType == DrawerType.TAG) {
+                            viewModel.onTagSelect(if (selectedTag == item) null else item)
+                        } else {
+                            viewModel.onTuneSelect(if (selectedTune == item) null else item)
+                        }
+                        scope.launch { sheetState.hide() }.invokeOnCompletion {
+                            showDrawer = false
+                            viewModel.onDrawerSearchQueryChange("")
+                        }
+                    }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun ExploreDrawerContent(
+    title: String,
+    query: String,
+    onQueryChange: (String) -> Unit,
+    items: List<String>,
+    selectedItem: String?,
+    onItemClick: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .padding(horizontal = 16.dp)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
+
+        OutlinedTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            placeholder = { Text("搜索内容") },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            trailingIcon = {
+                if (query.isNotEmpty()) {
+                    IconButton(onClick = { onQueryChange("") }) {
+                        Icon(Icons.Default.Close, contentDescription = null)
+                    }
+                }
+            },
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Box(modifier = Modifier.weight(1f)) {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items.forEach { item ->
+                        FilterChip(
+                            selected = selectedItem == item,
+                            onClick = { onItemClick(item) },
+                            label = { Text(text = item) }
+                        )
+                    }
+                }
+                // 底部留白，避免被导航栏遮挡
+                Spacer(modifier = Modifier.height(WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 16.dp))
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -336,103 +460,6 @@ fun SectionTitle(title: String) {
             .padding(vertical = 8.dp)
             .fillMaxWidth()
     )
-}
-
-@Composable
-fun PoetPreviewCard(
-    poet: Poet,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "诗人",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = poet.name,
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold
-                )
-            )
-            Text(
-                text = poet.dynasty,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.secondary
-            )
-            if (!poet.lifetime.isNullOrBlank()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = poet.lifetime,
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun PoemPreviewCard(
-    userPoem: UserPoem,
-    onClick: () -> Unit
-) {
-    val poem = userPoem.poem
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = poem.title,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = poem.author,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    color = MaterialTheme.colorScheme.primary
-                ),
-                modifier = Modifier.padding(vertical = 4.dp)
-            )
-            Text(
-                text = poem.content.replace("\n", " "),
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                ),
-                maxLines = 4,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-    }
 }
 
 @Preview(showBackground = true)

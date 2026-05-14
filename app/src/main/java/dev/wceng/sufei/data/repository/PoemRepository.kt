@@ -82,6 +82,11 @@ interface PoemRepository {
     fun getAllPoets(): Flow<List<Poet>>
 
     /**
+     * 根据诗人名查询诗人 ID
+     */
+    suspend fun getPoetIdByName(name: String): String?
+
+    /**
      * 根据 ID 获取诗人详情
      */
     fun getPoetById(id: String): Flow<Poet?>
