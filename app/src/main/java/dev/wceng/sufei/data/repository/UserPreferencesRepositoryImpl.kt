@@ -1,6 +1,7 @@
 package dev.wceng.sufei.data.repository
 
 import dev.wceng.sufei.data.local.datastore.UserPreferencesDataSource
+import dev.wceng.sufei.data.model.ChineseVariant
 import dev.wceng.sufei.data.model.UserPreferences
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -31,6 +32,10 @@ class UserPreferencesRepositoryImpl @Inject constructor(
 
     override suspend fun setFontFamilyName(name: String) {
         dataSource.setFontFamilyName(name)
+    }
+
+    override suspend fun setChineseVariant(variant: ChineseVariant) {
+        dataSource.setChineseVariant(variant)
     }
 
     override suspend fun updateDailyPoem(poemId: String, timestamp: Long) {

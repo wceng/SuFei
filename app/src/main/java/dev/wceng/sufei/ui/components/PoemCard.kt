@@ -19,9 +19,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import dev.wceng.sufei.R
 import dev.wceng.sufei.data.model.Poem
 import dev.wceng.sufei.data.model.Poet
 import dev.wceng.sufei.data.model.UserPoem
@@ -50,7 +52,7 @@ fun PoetPreviewCard(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "诗人",
+                    text = stringResource(R.string.explore_section_poet),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary
                 )

@@ -1,6 +1,7 @@
 package dev.wceng.sufei.data.local.datastore
 
 import androidx.datastore.core.DataStore
+import dev.wceng.sufei.data.model.ChineseVariant
 import dev.wceng.sufei.data.model.UserPreferences as UserPreferencesModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -22,9 +23,27 @@ class UserPreferencesDataSource(
                 useDynamicColor = proto.useDynamicColor,
                 fontFamilyName = proto.fontFamilyName.ifEmpty { "Serif" },
                 dailyPoemId = proto.dailyPoemId,
-                lastUpdateMillis = proto.lastUpdateMillis
+                lastUpdateMillis = proto.lastUpdateMillis,
+                chineseVariant = when (proto.chineseVariant) {
+                    ChineseVariantProto.SIMPLIFIED -> ChineseVariant.SIMPLIFIED
+                    ChineseVariantProto.TRADITIONAL_HK -> ChineseVariant.TRADITIONAL_HK
+                    ChineseVariantProto.TRADITIONAL_TW -> ChineseVariant.TRADITIONAL_TW
+                    else -> detectDefaultVariant()
+                }
             )
         }
+
+    private fun detectDefaultVariant(): ChineseVariant {
+        val locale = java.util.Locale.getDefault()
+        return when (locale.language) {
+            "zh" -> when (locale.country) {
+                "HK", "MO" -> ChineseVariant.TRADITIONAL_HK
+                "TW" -> ChineseVariant.TRADITIONAL_TW
+                else -> ChineseVariant.SIMPLIFIED
+            }
+            else -> ChineseVariant.SIMPLIFIED
+        }
+    }
 
     /**
      * 更新收藏状态
@@ -58,6 +77,20 @@ class UserPreferencesDataSource(
 
     suspend fun setFontFamilyName(name: String) {
         updateData { it.toBuilder().setFontFamilyName(name).build() }
+    }
+
+    suspend fun setChineseVariant(variant: ChineseVariant) {
+        updateData {
+            it.toBuilder()
+                .setChineseVariant(
+                    when (variant) {
+                        ChineseVariant.TRADITIONAL_HK -> ChineseVariantProto.TRADITIONAL_HK
+                        ChineseVariant.TRADITIONAL_TW -> ChineseVariantProto.TRADITIONAL_TW
+                        ChineseVariant.SIMPLIFIED -> ChineseVariantProto.SIMPLIFIED
+                    }
+                )
+                .build()
+        }
     }
 
     /**

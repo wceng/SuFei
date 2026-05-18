@@ -1,0 +1,90 @@
+<resources>
+    <string name="app_name">素扉</string>
+
+    <!-- Tabs -->
+    <string name="tab_home">今日</string>
+    <string name="tab_explore">萬卷</string>
+    <string name="tab_collection">枕邊</string>
+    <string name="tab_settings">設定</string>
+
+    <!-- Settings -->
+    <string name="settings_title">設定</string>
+    <string name="settings_section_reading">閱讀偏好</string>
+    <string name="settings_font_size">字體大小</string>
+    <string name="settings_line_height">行間距</string>
+    <string name="settings_chinese_variant">字形顯示</string>
+    <string name="settings_section_appearance">外觀客製化</string>
+    <string name="settings_dynamic_color">Material You 動態色彩</string>
+    <string name="settings_version">素扉 v%s</string>
+
+    <!-- Chinese Variants -->
+    <string name="variant_simplified">簡體中文（中國大陸）</string>
+    <string name="variant_traditional_hk">繁體中文（中國香港）</string>
+    <string name="variant_traditional_tw">繁體中文（中國台灣）</string>
+
+    <!-- Explore -->
+    <string-array name="dynasties">
+        <item>唐代</item>
+        <item>宋代</item>
+        <item>元代</item>
+        <item>明代</item>
+        <item>清代</item>
+        <item>魏晉</item>
+        <item>南北朝</item>
+        <item>兩漢</item>
+        <item>先秦</item>
+        <item>隋代</item>
+        <item>五代</item>
+        <item>金朝</item>
+        <item>近代</item>
+        <item>現代</item>
+        <item>當代</item>
+    </string-array>
+    <string name="explore_search_placeholder">搜尋內容</string>
+    <string name="explore_tags_plaza">標籤廣場</string>
+    <string name="explore_tunes_plaza">詞牌廣場</string>
+    <string name="explore_main_search_placeholder">搜尋詩人、標題、內容</string>
+    <string name="explore_section_poet">詩人</string>
+    <string name="explore_section_poem">詩詞</string>
+
+    <!-- Poet Detail -->
+    <string name="poet_detail_tab_intro">介紹</string>
+    <string name="poet_detail_tab_works">作品</string>
+    <string name="poet_detail_no_intro">暫無介紹數據</string>
+    <string name="poet_detail_view_all">查看全部</string>
+    <string name="poet_detail_works_collection">作品集</string>
+    <string name="poet_detail_no_works">暫無作品數據</string>
+
+    <!-- Poet Works -->
+    <string name="poet_works_title">%s的作品</string>
+
+    <!-- Detail -->
+    <string name="action_back">返回</string>
+    <string name="action_tts_stop">停止朗讀</string>
+    <string name="action_tts_start">朗讀</string>
+    <string name="action_favorite">收藏</string>
+    <string name="action_share">分享</string>
+    <string name="action_remove_favorite">取消收藏</string>
+    <string name="share_poem_title">分享詩詞</string>
+    <string name="share_from_app">—— 來自「素扉」數位詩集</string>
+    <string name="share_content_format">《%1$s》· %2$s [%3$s]\n\n%4$s\n\n%5$s</string>
+    <string name="error_poem_not_found">未找到該詩詞</string>
+    <string name="error_poet_not_found">未找到該詩人資訊</string>
+    <string name="error_load_failed">載入失敗</string>
+    <string name="error_daily_poem_failed">未能偶遇詩句</string>
+    <string name="error_unknown">未知錯誤</string>
+    <string name="snackbar_removed_favorite">已取消收藏</string>
+    <string name="snackbar_undo">復原</string>
+    <string name="empty_collection_title">暫無枕邊書</string>
+    <string name="empty_collection_subtitle">且向萬卷求</string>
+    <string name="interpretation_notes">注釋</string>
+    <string name="interpretation_translation">譯文</string>
+    <string name="interpretation_analysis">賞析</string>
+    <string name="interpretation_background">背景</string>
+
+    <!-- Splash -->
+    <string name="splash_loading_1">正在為您裁切宣紙...</string>
+    <string name="splash_loading_2">正為您整理萬卷書...</string>
+    <string name="splash_loading_3">墨香已至，即將開啟...</string>
+
+</resources>

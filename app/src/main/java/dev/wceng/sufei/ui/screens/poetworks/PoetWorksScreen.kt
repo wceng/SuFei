@@ -24,8 +24,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dev.wceng.sufei.R
 import dev.wceng.sufei.ui.components.PoemPreviewCard
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,13 +48,13 @@ fun PoetWorksScreen(
                         else -> ""
                     }
                     Text(
-                        text = "${poetName}的作品",
+                        text = stringResource(R.string.poet_works_title, poetName),
                         fontWeight = FontWeight.Bold
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

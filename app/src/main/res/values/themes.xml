@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.SuFei" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.SuFei" parent="Theme.AppCompat.DayNight.NoActionBar" />
 
     <!-- 闪屏主题 -->
     <style name="Theme.SuFei.Starting" parent="Theme.SplashScreen">

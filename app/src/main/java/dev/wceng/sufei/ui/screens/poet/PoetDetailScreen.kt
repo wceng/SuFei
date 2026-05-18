@@ -13,21 +13,23 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import dev.wceng.sufei.R
 import dev.wceng.sufei.data.model.Poet
 import dev.wceng.sufei.data.model.PoetDescription
 import dev.wceng.sufei.data.model.UserPoem
 import dev.wceng.sufei.ui.components.PoemPreviewCard
 import dev.wceng.sufei.ui.theme.SuFeiTheme
 
-enum class PoetDetailTab(val title: String) {
-    INTRODUCTION("介绍"),
-    WORKS("作品")
+enum class PoetDetailTab(val titleRes: Int) {
+    INTRODUCTION(R.string.poet_detail_tab_intro),
+    WORKS(R.string.poet_detail_tab_works)
 }
 
 @Composable
@@ -61,7 +63,7 @@ fun PoetDetailContent(
                 title = { },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -88,7 +90,7 @@ fun PoetDetailContent(
                 }
                 is PoetDetailUiState.Error -> {
                     Text(
-                        text = uiState.message,
+                        text = stringResource(uiState.messageRes),
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.align(Alignment.Center)
                     )
@@ -153,7 +155,7 @@ private fun PoetDetailScrollableContent(
                 FilterChip(
                     selected = selectedTab == tab,
                     onClick = { selectedTab = tab },
-                    label = { Text(tab.title) },
+                    label = { Text(stringResource(tab.titleRes)) },
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
             }
@@ -197,7 +199,7 @@ private fun PoetDetailScrollableContent(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "暂无介绍数据",
+                            text = stringResource(R.string.poet_detail_no_intro),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.outline
                         )
@@ -218,21 +220,21 @@ private fun PoetDetailScrollableContent(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "作品集",
+                            text = stringResource(R.string.poet_detail_works_collection),
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold
                             )
                         )
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "查看全部",
+                                text = stringResource(R.string.poet_detail_view_all),
                                 style = MaterialTheme.typography.bodyMedium.copy(
                                     color = MaterialTheme.colorScheme.primary
                                 )
                             )
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                contentDescription = "全部作品",
+                                contentDescription = stringResource(R.string.poet_detail_view_all),
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -257,7 +259,7 @@ private fun PoetDetailScrollableContent(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "暂无作品数据",
+                            text = stringResource(R.string.poet_detail_no_works),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.outline
                         )

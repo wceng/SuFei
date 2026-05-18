@@ -1,0 +1,7 @@
+- Added support for dynamic conversion between Simplified and Traditional Chinese (HK/TW).
+- Integrated string externalization and localized resources for HK and TW.
+- Refactored language switching architecture to eliminate UI flickering.
+- Automatic content conversion for poems and poets based on user preference.
+- Added deep link support via sufei://explore URI scheme.
+- Lowered minimum supported version to Android 6.0 (API 23).
+- Updated Android Gradle Plugin and key dependencies.

@@ -14,10 +14,10 @@ android {
 
     defaultConfig {
         applicationId = "dev.wceng.sufei"
-        minSdk = 26
+        minSdk = 23
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.3.0"
+        versionCode = 5
+        versionName = "1.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -58,6 +58,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -88,6 +89,9 @@ dependencies {
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.lifecycle.viewModel.navigation3)
+
+    // OpenCC4J
+    implementation(libs.opencc4j)
 
     // Adaptive Navigation
     implementation(libs.androidx.compose.material3.adaptive.navigation.suite)

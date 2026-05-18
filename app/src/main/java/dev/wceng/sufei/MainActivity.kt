@@ -2,28 +2,29 @@ package dev.wceng.sufei
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import dev.wceng.sufei.data.model.ChineseVariant
 import dev.wceng.sufei.data.model.UserPreferences
 import dev.wceng.sufei.data.repository.ImportState
 import dev.wceng.sufei.data.repository.UserPreferencesRepository
 import dev.wceng.sufei.ui.SuFeiApp
-import dev.wceng.sufei.ui.screens.splash.SplashScreen
-import dev.wceng.sufei.ui.screens.splash.SplashViewModel
-import dev.wceng.sufei.ui.theme.SuFeiTheme
-import dagger.hilt.android.AndroidEntryPoint
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import dev.wceng.sufei.ui.navigation.EntryProviderInstaller
 import dev.wceng.sufei.ui.navigation.Explore
 import dev.wceng.sufei.ui.navigation.Navigator
+import dev.wceng.sufei.ui.screens.splash.SplashScreen
+import dev.wceng.sufei.ui.screens.splash.SplashViewModel
+import dev.wceng.sufei.ui.theme.SuFeiTheme
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     // 注入 Hilt 管理的全局导航器
     @Inject
@@ -74,9 +75,31 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleIntent(intent: Intent?) {
-        if (intent?.action == Intent.ACTION_PROCESS_TEXT) {
-            val query = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT)
-            navigator.goTo(Explore(query = query))
+        if (intent == null) return
+
+        when (intent.action) {
+            Intent.ACTION_PROCESS_TEXT -> {
+                val query = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT)
+                navigator.goTo(Explore(query = query))
+            }
+
+            Intent.ACTION_VIEW -> {
+                val data = intent.data
+                if (data?.scheme == "sufei" && data.host == "explore") {
+                    val query = data.getQueryParameter("query")
+                    val tag = data.getQueryParameter("tag")
+                    val tune = data.getQueryParameter("tune")
+                    val dynasty = data.getQueryParameter("dynasty")
+                    navigator.goTo(
+                        Explore(
+                            query = query,
+                            tag = tag,
+                            tune = tune,
+                            dynasty = dynasty
+                        )
+                    )
+                }
+            }
         }
     }
 }

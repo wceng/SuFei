@@ -20,11 +20,6 @@ interface PoemRepository {
     fun getUserPoemById(id: String): Flow<UserPoem?>
 
     /**
-     * 根据 ID 获取单首诗词流 (原始模型)
-     */
-    fun getPoemByIdFlow(id: String): Flow<Poem?>
-
-    /**
      * 搜索诗词，支持朝代和标签过滤
      */
     fun searchUserPoems(
@@ -70,16 +65,6 @@ interface PoemRepository {
      * 搜索诗人
      */
     fun searchPoets(query: String): Flow<List<Poet>>
-
-    /**
-     * 获取推荐诗人 (如作品数量多的)
-     */
-    fun getTopPoets(limit: Int = 10): Flow<List<Poet>>
-
-    /**
-     * 获取所有诗人
-     */
-    fun getAllPoets(): Flow<List<Poet>>
 
     /**
      * 根据诗人名查询诗人 ID

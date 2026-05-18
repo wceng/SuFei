@@ -18,15 +18,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import dev.wceng.sufei.R
 import dev.wceng.sufei.data.model.Poem
 import dev.wceng.sufei.data.model.UserPoem
 import dev.wceng.sufei.ui.theme.NotoSerifSC
 import dev.wceng.sufei.ui.theme.SuFeiTheme
+import dev.wceng.sufei.util.ChineseConverter
 
 @Composable
 fun HomeScreen(
@@ -53,7 +56,7 @@ fun HomeScreen(
             }
             is HomeUiState.Error -> {
                 Text(
-                    text = state.message,
+                    text = stringResource(state.messageRes),
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.align(Alignment.Center)
                 )
@@ -105,7 +108,7 @@ private fun MultiColumnVerticalText(
     maxCharsPerColumn: Int = 8
 ) {
     val columns = text.chunked(maxCharsPerColumn)
-    
+
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(columnSpacing),
@@ -125,14 +128,18 @@ private fun MultiColumnVerticalText(
  * 判断是否为词/曲
  */
 private fun isCi(poem: Poem): Boolean {
-    if (poem.tags.any { it.contains("词") || it.contains("曲") || it.contains("诗余") }) return true
+    // 使用简体进行逻辑判断，确保不受繁简体转换影响
+    if (poem.tags.any { tag ->
+        val sTag = ChineseConverter.toSimplified(tag)
+        sTag.contains("词") || sTag.contains("曲") || sTag.contains("诗余")
+    }) return true
     if (poem.title.contains("·") || poem.title.contains("・")) return true
-    
+
     val lines = poem.content.lines().filter { it.isNotBlank() }
     if (lines.isEmpty()) return false
     val lengths = lines.map { it.filter { char -> char.isLetterOrDigit() }.length }
     val isRegularPoem = lengths.all { it == 5 || it == 7 } && lengths.distinct().size == 1
-    
+
     return !isRegularPoem
 }
 
@@ -263,22 +270,30 @@ private fun HomeContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 分享实现
+            val actionShare = stringResource(R.string.action_share)
+            val sharePoemTitle = stringResource(R.string.share_poem_title)
+            val shareFromApp = stringResource(R.string.share_from_app)
+            val shareFormat = stringResource(R.string.share_content_format)
             IconButton(onClick = {
-                val shareText = "《${poem.title}》· ${poem.author} [${poem.dynasty}]\n\n" +
-                        "${displayLines.joinToString("\n")}\n\n" +
-                        "—— 来自「素扉」数字诗集"
-                
+                val shareText = shareFormat.format(
+                    poem.title,
+                    poem.author,
+                    poem.dynasty,
+                    displayLines.joinToString("\n"),
+                    shareFromApp
+                )
+
                 val sendIntent = Intent().apply {
                     action = Intent.ACTION_SEND
                     putExtra(Intent.EXTRA_TEXT, shareText)
                     type = "text/plain"
                 }
-                val shareIntent = Intent.createChooser(sendIntent, "分享诗词")
+                val shareIntent = Intent.createChooser(sendIntent, sharePoemTitle)
                 context.startActivity(shareIntent)
             }) {
                 Icon(
                     imageVector = Icons.Default.Share,
-                    contentDescription = "分享",
+                    contentDescription = actionShare,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
                 )
             }
@@ -286,7 +301,7 @@ private fun HomeContent(
             IconButton(onClick = { onFavoriteToggle(!userPoem.isFavorite) }) {
                 Icon(
                     imageVector = if (userPoem.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = "收藏",
+                    contentDescription = stringResource(R.string.action_favorite),
                     tint = if (userPoem.isFavorite) Color(0xFFE09E87) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
                 )
             }

@@ -15,6 +15,8 @@ import dev.wceng.sufei.data.model.SearchResult
 import dev.wceng.sufei.data.model.Tag
 import dev.wceng.sufei.data.model.Tune
 import dev.wceng.sufei.data.model.UserPoem
+import dev.wceng.sufei.util.ChineseConverter
+import dev.wceng.sufei.util.convert
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -43,7 +45,7 @@ class PoemRepositoryImpl @Inject constructor(
             userPreferencesDataSource.userPreferencesFlow
         ) { entities, prefs ->
             entities.map { entity ->
-                UserPoem(poem = entity.toPoem(), userPreferences = prefs)
+                UserPoem(entity, prefs)
             }
         }.flowOn(Dispatchers.IO)
     }
@@ -54,15 +56,11 @@ class PoemRepositoryImpl @Inject constructor(
             userPreferencesDataSource.userPreferencesFlow
         ) { entity, prefs ->
             entity?.let {
-                UserPoem(poem = it.toPoem(), userPreferences = prefs)
+                UserPoem(it, prefs)
             }
         }.flowOn(Dispatchers.IO)
     }
 
-    override fun getPoemByIdFlow(id: String): Flow<Poem?> {
-        return poemDao.getPoemByIdFlow(id).map { it?.toPoem() }
-            .flowOn(Dispatchers.IO)
-    }
 
     override fun searchUserPoems(
         query: String,
@@ -71,12 +69,17 @@ class PoemRepositoryImpl @Inject constructor(
         tune: String?,
         limit: Int
     ): Flow<List<UserPoem>> {
+        val sQuery = ChineseConverter.toSimplified(query)
+        val sDynasty = dynasty?.let { ChineseConverter.toSimplified(it) }
+        val sTag = tag?.let { ChineseConverter.toSimplified(it) }
+        val sTune = tune?.let { ChineseConverter.toSimplified(it) }
+
         return combine(
-            poemDao.searchPoems(query, dynasty, tag, tune, limit),
+            poemDao.searchPoems(sQuery, sDynasty, sTag, sTune, limit),
             userPreferencesDataSource.userPreferencesFlow
         ) { entities, prefs ->
             entities.map { entity ->
-                UserPoem(poem = entity.toPoem(), userPreferences = prefs)
+                UserPoem(entity, prefs)
             }
         }.flowOn(Dispatchers.IO)
     }
@@ -115,15 +118,18 @@ class PoemRepositoryImpl @Inject constructor(
                         
                         if (newPoemEntity != null) {
                             userPreferencesDataSource.updateDailyPoem(newPoemEntity.id, now)
-                            emit(UserPoem(poem = newPoemEntity.toPoem(), userPreferences = prefs))
+                            emit(UserPoem(newPoemEntity, prefs))
                         } else {
                             emit(null)
                         }
                     }
                 } else {
-                    poemDao.getPoemByIdFlow(prefs.dailyPoemId).map { entity ->
+                    combine(
+                        poemDao.getPoemByIdFlow(prefs.dailyPoemId),
+                        userPreferencesDataSource.userPreferencesFlow
+                    ) { entity, currentPrefs ->
                         entity?.let {
-                            UserPoem(poem = it.toPoem(), userPreferences = prefs)
+                            UserPoem(it, currentPrefs)
                         }
                     }
                 }
@@ -138,9 +144,12 @@ class PoemRepositoryImpl @Inject constructor(
                 if (prefs.favoritePoemIds.isEmpty()) {
                     flowOf(emptyList())
                 } else {
-                    poemDao.getPoemsByIds(prefs.favoritePoemIds).map { entities ->
+                    combine(
+                        poemDao.getPoemsByIds(prefs.favoritePoemIds),
+                        userPreferencesDataSource.userPreferencesFlow
+                    ) { entities, currentPrefs ->
                         entities.map { entity ->
-                            UserPoem(poem = entity.toPoem(), userPreferences = prefs)
+                            UserPoem(entity, currentPrefs)
                         }
                     }
                 }
@@ -149,50 +158,54 @@ class PoemRepositoryImpl @Inject constructor(
     }
 
     override fun getAllTags(): Flow<List<Tag>> {
-        return tagDao.getAllTags().map { entities ->
-            entities.map { it.toTag() }
+        return combine(
+            tagDao.getAllTags(),
+            userPreferencesDataSource.userPreferencesFlow
+        ) { entities, prefs ->
+            entities.map { Tag(ChineseConverter.convert(it.name, prefs.chineseVariant)) }
         }.flowOn(Dispatchers.IO)
     }
 
     override fun getAllTunes(): Flow<List<Tune>> =
-        tuneDao.getAllTunes().map { entities ->
-            entities.map { it.toTune() }
+        combine(
+            tuneDao.getAllTunes(),
+            userPreferencesDataSource.userPreferencesFlow
+        ) { entities, prefs ->
+            entities.map { Tune(ChineseConverter.convert(it.name, prefs.chineseVariant)) }
         }.flowOn(Dispatchers.IO)
 
     override fun searchPoets(query: String): Flow<List<Poet>> {
-        return poetDao.searchPoetsByName(query).map { entities ->
-            entities.map { it.toPoet() }
-        }.flowOn(Dispatchers.IO)
-    }
-
-    override fun getTopPoets(limit: Int): Flow<List<Poet>> {
-        return poetDao.getAllPoets().map { entities ->
-            entities.take(limit).map { it.toPoet() }
-        }.flowOn(Dispatchers.IO)
-    }
-
-    override fun getAllPoets(): Flow<List<Poet>> {
-        return poetDao.getAllPoets().map { entities ->
-            entities.map { it.toPoet() }
+        val sQuery = ChineseConverter.toSimplified(query)
+        return combine(
+            poetDao.searchPoetsByName(sQuery),
+            userPreferencesDataSource.userPreferencesFlow
+        ) { entities, prefs ->
+            entities.map { it.toPoet().convert(prefs.chineseVariant) }
         }.flowOn(Dispatchers.IO)
     }
 
     override fun getPoetById(id: String): Flow<Poet?> {
-        return poetDao.getPoetByIdFlow(id).map { it?.toPoet() }
-            .flowOn(Dispatchers.IO)
+        return combine(
+            poetDao.getPoetByIdFlow(id),
+            userPreferencesDataSource.userPreferencesFlow
+        ) { entity, prefs ->
+            entity?.toPoet()?.convert(prefs.chineseVariant)
+        }.flowOn(Dispatchers.IO)
     }
 
     override suspend fun getPoetIdByName(name: String): String? {
-        return poetDao.getPoetIdByName(name)
+        val sName = ChineseConverter.toSimplified(name)
+        return poetDao.getPoetIdByName(sName)
     }
 
     override fun getPoemsByPoet(authorName: String): Flow<List<UserPoem>> {
+        val sAuthor = ChineseConverter.toSimplified(authorName)
         return combine(
-            poemDao.getPoemsByAuthor(authorName, limit = 20),
+            poemDao.getPoemsByAuthor(sAuthor, limit = 20),
             userPreferencesDataSource.userPreferencesFlow
         ) { entities, prefs ->
             entities.map { entity ->
-                UserPoem(poem = entity.toPoem(), userPreferences = prefs)
+                UserPoem(entity, prefs)
             }
         }.flowOn(Dispatchers.IO)
     }

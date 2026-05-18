@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -51,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import dev.wceng.sufei.R
 import dev.wceng.sufei.data.model.Poem
 import dev.wceng.sufei.data.model.UserPoem
 import dev.wceng.sufei.data.model.UserPreferences
@@ -67,6 +69,8 @@ fun DetailScreen(
     val uiState by viewModel.uiState.collectAsState()
     val isTtsPlaying by viewModel.isTtsPlaying.collectAsState()
     val currentSentenceIndex by viewModel.currentSentenceIndex.collectAsState()
+
+    val errorPoemNotFound = stringResource(R.string.error_poem_not_found)
 
     DisposableEffect(viewModel) {
         onDispose {
@@ -122,13 +126,15 @@ fun DetailContent(
                 title = { },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
                     }
                 },
                 actions = {
                     if (uiState is DetailUiState.Success) {
                         val userPoem = uiState.userPoem
                         val poem = userPoem.poem
+                        val actionTtsStop = stringResource(R.string.action_tts_stop)
+                        val actionTtsStart = stringResource(R.string.action_tts_start)
                         IconButton(onClick = {
                             val paragraphs = poem.content.split("\n")
                             val verses = paragraphs.flatMap { p ->
@@ -139,14 +145,14 @@ fun DetailContent(
                         }) {
                             Icon(
                                 imageVector = if (isTtsPlaying) Icons.Default.Stop else Icons.AutoMirrored.Filled.VolumeUp,
-                                contentDescription = if (isTtsPlaying) "停止朗读" else "朗读",
+                                contentDescription = if (isTtsPlaying) actionTtsStop else actionTtsStart,
                                 tint = if (isTtsPlaying) MaterialTheme.colorScheme.primary else LocalContentColor.current
                             )
                         }
                         IconButton(onClick = { onFavoriteToggle(!userPoem.isFavorite) }) {
                             Icon(
                                 imageVector = if (userPoem.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                contentDescription = "收藏",
+                                contentDescription = stringResource(R.string.action_favorite),
                                 tint = if (userPoem.isFavorite) Color(0xFFE09E87) else LocalContentColor.current
                             )
                         }
@@ -182,7 +188,7 @@ fun DetailContent(
                 }
                 is DetailUiState.Error -> {
                     Text(
-                        text = uiState.message,
+                        text = stringResource(uiState.messageRes),
                         modifier = Modifier.align(Alignment.Center),
                         color = MaterialTheme.colorScheme.error
                     )
@@ -306,10 +312,10 @@ fun PoemReader(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(modifier = Modifier.height(32.dp))
             
-            InterpretationSection(title = "注释", content = poem.notes, fontSizeMultiplier = userPreferences.fontSizeMultiplier, lineHeightMultiplier = userPreferences.lineHeightMultiplier)
-            InterpretationSection(title = "译文", content = poem.translation, fontSizeMultiplier = userPreferences.fontSizeMultiplier, lineHeightMultiplier = userPreferences.lineHeightMultiplier)
-            InterpretationSection(title = "赏析", content = poem.intro, fontSizeMultiplier = userPreferences.fontSizeMultiplier, lineHeightMultiplier = userPreferences.lineHeightMultiplier)
-            InterpretationSection(title = "背景", content = poem.background, fontSizeMultiplier = userPreferences.fontSizeMultiplier, lineHeightMultiplier = userPreferences.lineHeightMultiplier)
+            InterpretationSection(title = stringResource(R.string.interpretation_notes), content = poem.notes, fontSizeMultiplier = userPreferences.fontSizeMultiplier, lineHeightMultiplier = userPreferences.lineHeightMultiplier)
+            InterpretationSection(title = stringResource(R.string.interpretation_translation), content = poem.translation, fontSizeMultiplier = userPreferences.fontSizeMultiplier, lineHeightMultiplier = userPreferences.lineHeightMultiplier)
+            InterpretationSection(title = stringResource(R.string.interpretation_analysis), content = poem.intro, fontSizeMultiplier = userPreferences.fontSizeMultiplier, lineHeightMultiplier = userPreferences.lineHeightMultiplier)
+            InterpretationSection(title = stringResource(R.string.interpretation_background), content = poem.background, fontSizeMultiplier = userPreferences.fontSizeMultiplier, lineHeightMultiplier = userPreferences.lineHeightMultiplier)
         }
 
         Spacer(modifier = Modifier.height(64.dp))

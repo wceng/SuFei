@@ -10,6 +10,8 @@ import dev.wceng.sufei.data.model.SearchResult
 import dev.wceng.sufei.data.model.Tag
 import dev.wceng.sufei.data.model.Tune
 import dev.wceng.sufei.data.repository.PoemRepository
+import dev.wceng.sufei.data.repository.UserPreferencesRepository
+import dev.wceng.sufei.util.ChineseConverter
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,7 +31,8 @@ class ExploreViewModel @AssistedInject constructor(
     @Assisted("initialTag") private val initialTag: String?,
     @Assisted("initialTune") private val initialTune: String?,
     @Assisted("initialDynasty") private val initialDynasty: String?,
-    private val poemRepository: PoemRepository
+    private val poemRepository: PoemRepository,
+    private val userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow(initialQuery ?: "")
@@ -55,18 +58,21 @@ class ExploreViewModel @AssistedInject constructor(
         "爱国", "哲理", "闺怨", "豪放", "婉约",
     )
 
-    val recommendedTags: StateFlow<List<Tag>> = _selectedTag
-        .map { selected ->
-            val top = hotTagNames.asSequence().map { Tag(it) }.toMutableList()
-            if (selected != null && top.none { it.name == selected }) {
-                top.add(0, Tag(selected))
-            }
-            top
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = hotTagNames.map { Tag(it) }
-        )
+    val recommendedTags: StateFlow<List<Tag>> = combine(
+        _selectedTag,
+        userPreferencesRepository.userPreferences
+    ) { selected, prefs ->
+        val convertedHotNames = hotTagNames.map { ChineseConverter.convert(it, prefs.chineseVariant) }
+        val top = convertedHotNames.map { Tag(it) }.toMutableList()
+        if (selected != null && top.none { it.name == selected }) {
+            top.add(0, Tag(selected))
+        }
+        top
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = hotTagNames.map { Tag(it) }
+    )
 
     private val hotTuneNames = listOf(
         "浣溪沙", "水调歌头", "菩萨蛮", "鹧鸪天", "满江红",
@@ -74,18 +80,21 @@ class ExploreViewModel @AssistedInject constructor(
         "沁园春", "点绛唇", "贺新郎", "清平乐", "虞美人",
     )
 
-    val recommendedTunes: StateFlow<List<Tune>> = _selectedTune
-        .map { selected ->
-            val top = hotTuneNames.asSequence().map { Tune(it) }.toMutableList()
-            if (selected != null && top.none { it.name == selected }) {
-                top.add(0, Tune(selected))
-            }
-            top
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = hotTuneNames.map { Tune(it) }
-        )
+    val recommendedTunes: StateFlow<List<Tune>> = combine(
+        _selectedTune,
+        userPreferencesRepository.userPreferences
+    ) { selected, prefs ->
+        val convertedHotNames = hotTuneNames.map { ChineseConverter.convert(it, prefs.chineseVariant) }
+        val top = convertedHotNames.map { Tune(it) }.toMutableList()
+        if (selected != null && top.none { it.name == selected }) {
+            top.add(0, Tune(selected))
+        }
+        top
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = hotTuneNames.map { Tune(it) }
+    )
 
     // 所有标签/词牌数据（供抽屉展示）
     val allTags: StateFlow<List<String>> = combine(
@@ -117,7 +126,7 @@ class ExploreViewModel @AssistedInject constructor(
         combine(_searchQuery, _selectedDynasty, _selectedTag, _selectedTune) { query, dynasty, tag, tune ->
             DataTuple(query, dynasty, tag, tune)
         }
-            .debounce(300)
+            .debounce(200)
             .flatMapLatest { tuple ->
                 if (tuple.query.isBlank() && tuple.dynasty == null && tuple.tag == null && tuple.tune == null) {
                     poemRepository.getAllUserPoems(limit = 50).map { poems ->

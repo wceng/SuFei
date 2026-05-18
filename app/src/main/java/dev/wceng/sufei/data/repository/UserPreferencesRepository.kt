@@ -1,5 +1,6 @@
 package dev.wceng.sufei.data.repository
 
+import dev.wceng.sufei.data.model.ChineseVariant
 import dev.wceng.sufei.data.model.UserPreferences
 import kotlinx.coroutines.flow.Flow
 
@@ -14,5 +15,6 @@ interface UserPreferencesRepository {
     suspend fun setLineHeightMultiplier(multiplier: Float)
     suspend fun setUseDynamicColor(use: Boolean)
     suspend fun setFontFamilyName(name: String)
+    suspend fun setChineseVariant(variant: ChineseVariant)
     suspend fun updateDailyPoem(poemId: String, timestamp: Long)
 }

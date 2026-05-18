@@ -3,6 +3,7 @@ package dev.wceng.sufei.ui.screens.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.wceng.sufei.R
 import dev.wceng.sufei.data.model.UserPoem
 import dev.wceng.sufei.data.repository.PoemRepository
 import dev.wceng.sufei.data.repository.UserPreferencesRepository
@@ -26,10 +27,10 @@ class HomeViewModel @Inject constructor(
             if (userPoem != null) {
                 HomeUiState.Success(userPoem)
             } else {
-                HomeUiState.Error("未能偶遇诗句")
+                HomeUiState.Error(R.string.error_daily_poem_failed)
             }
         }
-        .catch { emit(HomeUiState.Error(it.message ?: "未知错误")) }
+        .catch { emit(HomeUiState.Error(R.string.error_unknown)) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -46,5 +47,5 @@ class HomeViewModel @Inject constructor(
 sealed interface HomeUiState {
     object Loading : HomeUiState
     data class Success(val userPoem: UserPoem) : HomeUiState
-    data class Error(val message: String) : HomeUiState
+    data class Error(val messageRes: Int) : HomeUiState
 }

@@ -3,6 +3,8 @@ syntax = "proto3";
 option java_package = "dev.wceng.sufei.data.local.datastore";
 option java_multiple_files = true;
 
+import "chinese_variant.proto";
+
 message UserPreferences {
   repeated string favorite_poem_ids = 1;
   float font_size_multiplier = 2;
@@ -13,4 +15,6 @@ message UserPreferences {
   string daily_poem_id = 6;
   // 上次更新每日诗词的时间戳 (毫秒)
   int64 last_update_millis = 7;
+  // 中文变体
+  ChineseVariantProto chinese_variant = 8;
 }

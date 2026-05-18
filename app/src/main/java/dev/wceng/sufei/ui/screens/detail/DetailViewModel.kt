@@ -6,6 +6,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.wceng.sufei.R
 import dev.wceng.sufei.data.model.UserPoem
 import dev.wceng.sufei.data.model.UserPreferences
 import dev.wceng.sufei.data.repository.PoemRepository
@@ -45,7 +46,7 @@ class DetailViewModel @AssistedInject constructor(
         if (userPoem != null) {
             DetailUiState.Success(userPoem, userPrefs)
         } else {
-            DetailUiState.Error("未找到该诗词")
+            DetailUiState.Error(R.string.error_poem_not_found)
         }
     }.stateIn(
         scope = viewModelScope,
@@ -98,5 +99,5 @@ class DetailViewModel @AssistedInject constructor(
 sealed interface DetailUiState {
     data object Loading : DetailUiState
     data class Success(val userPoem: UserPoem, val userPreferences: UserPreferences) : DetailUiState
-    data class Error(val message: String) : DetailUiState
+    data class Error(val messageRes: Int) : DetailUiState
 }

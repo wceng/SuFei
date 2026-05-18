@@ -1,20 +1,26 @@
 package dev.wceng.sufei.ui.screens.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.TextFormat
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import dev.wceng.sufei.BuildConfig
+import dev.wceng.sufei.R
+import dev.wceng.sufei.data.model.ChineseVariant
 import dev.wceng.sufei.data.model.UserPreferences
 import dev.wceng.sufei.ui.theme.SuFeiTheme
 
@@ -29,7 +35,8 @@ fun SettingsScreen(
         onFontSizeChange = viewModel::setFontSizeMultiplier,
         onLineHeightChange = viewModel::setLineHeightMultiplier,
         onDynamicColorToggle = viewModel::setUseDynamicColor,
-        onFontFamilyChange = viewModel::setFontFamilyName
+        onFontFamilyChange = viewModel::setFontFamilyName,
+        onChineseVariantChange = viewModel::setChineseVariant
     )
 }
 
@@ -40,14 +47,15 @@ fun SettingsContent(
     onFontSizeChange: (Float) -> Unit,
     onLineHeightChange: (Float) -> Unit,
     onDynamicColorToggle: (Boolean) -> Unit,
-    onFontFamilyChange: (String) -> Unit
+    onFontFamilyChange: (String) -> Unit,
+    onChineseVariantChange: (ChineseVariant) -> Unit
 ) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { 
                     Text(
-                        "设置", 
+                        stringResource(R.string.settings_title), 
                         fontWeight = FontWeight.Bold
                     ) 
                 }
@@ -63,28 +71,36 @@ fun SettingsContent(
                 .padding(16.dp)
         ) {
             // 阅读偏好组
-            SettingsSectionTitle(title = "阅读偏好", icon = Icons.Default.TextFormat)
+            SettingsSectionTitle(title = stringResource(R.string.settings_section_reading), icon = Icons.Default.TextFormat)
             
             SettingsSliderItem(
-                label = "字体大小",
+                label = stringResource(R.string.settings_font_size),
                 value = userPreferences.fontSizeMultiplier,
                 onValueChange = onFontSizeChange,
                 valueRange = 0.8f..1.5f
             )
 
             SettingsSliderItem(
-                label = "行间距",
+                label = stringResource(R.string.settings_line_height),
                 value = userPreferences.lineHeightMultiplier,
                 onValueChange = onLineHeightChange,
                 valueRange = 1.0f..2.5f
             )
 
+            SettingsSelectionItem(
+                label = stringResource(R.string.settings_chinese_variant),
+                options = ChineseVariant.entries,
+                selectedOption = userPreferences.chineseVariant,
+                onOptionSelected = onChineseVariantChange,
+                optionLabel = { stringResource(it.labelRes) }
+            )
+
             // 外观组
             Spacer(modifier = Modifier.height(24.dp))
-            SettingsSectionTitle(title = "外观定制", icon = Icons.Default.Palette)
+            SettingsSectionTitle(title = stringResource(R.string.settings_section_appearance), icon = Icons.Default.Palette)
 
             SettingsSwitchItem(
-                label = "Material You 动态色彩",
+                label = stringResource(R.string.settings_dynamic_color),
                 checked = userPreferences.useDynamicColor,
                 onCheckedChange = onDynamicColorToggle
             )
@@ -92,7 +108,7 @@ fun SettingsContent(
             // 更多信息
             Spacer(modifier = Modifier.height(48.dp))
             Text(
-                text = "素扉 v${BuildConfig.VERSION_NAME}",
+                text = stringResource(R.string.settings_version, BuildConfig.VERSION_NAME),
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
@@ -102,7 +118,7 @@ fun SettingsContent(
 }
 
 @Composable
-private fun SettingsSectionTitle(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
+private fun SettingsSectionTitle(title: String, icon: ImageVector) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(bottom = 16.dp)
@@ -160,6 +176,58 @@ private fun SettingsSwitchItem(
     }
 }
 
+@Composable
+private fun <T> SettingsSelectionItem(
+    label: String,
+    options: List<T>,
+    selectedOption: T,
+    onOptionSelected: (T) -> Unit,
+    optionLabel: @Composable (T) -> String
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp)
+            .clickable { expanded = true },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(text = label, style = MaterialTheme.typography.bodyMedium)
+        
+        Box {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = optionLabel(selectedOption),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(optionLabel(option)) },
+                        onClick = {
+                            onOptionSelected(option)
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun SettingsContentPreview() {
@@ -169,7 +237,8 @@ fun SettingsContentPreview() {
             onFontSizeChange = {},
             onLineHeightChange = {},
             onDynamicColorToggle = {},
-            onFontFamilyChange = {}
+            onFontFamilyChange = {},
+            onChineseVariantChange = {}
         )
     }
 }

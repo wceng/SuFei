@@ -11,11 +11,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import dev.wceng.sufei.R
 import dev.wceng.sufei.data.model.Poem
 import dev.wceng.sufei.data.model.UserPoem
 import dev.wceng.sufei.ui.theme.SuFeiTheme
@@ -29,6 +31,8 @@ fun CollectionScreen(
     val favoritePoems by viewModel.favoritePoems.collectAsState()
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    val removedFavoriteMsg = stringResource(R.string.snackbar_removed_favorite)
+    val undoLabel = stringResource(R.string.snackbar_undo)
 
     CollectionContent(
         favoritePoems = favoritePoems,
@@ -39,8 +43,8 @@ fun CollectionScreen(
             if (!isFav) {
                 scope.launch {
                     val result = snackbarHostState.showSnackbar(
-                        message = "已取消收藏",
-                        actionLabel = "撤销",
+                        message = removedFavoriteMsg,
+                        actionLabel = undoLabel,
                         duration = SnackbarDuration.Short
                     )
                     if (result == SnackbarResult.ActionPerformed) {
@@ -64,7 +68,7 @@ fun CollectionContent(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { 
-                    Text("枕边", fontWeight = FontWeight.Bold) 
+                    Text(stringResource(R.string.tab_collection), fontWeight = FontWeight.Bold) 
                 }
             )
         },
@@ -142,7 +146,7 @@ fun FavoritePoemItem(
             IconButton(onClick = onToggleFavorite) {
                 Icon(
                     imageVector = Icons.Default.Favorite,
-                    contentDescription = "取消收藏",
+                    contentDescription = stringResource(R.string.action_remove_favorite),
                     tint = Color(0xFFE09E87) // 妃红色
                 )
             }
@@ -155,13 +159,13 @@ fun EmptyCollectionState(modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "暂无枕边书",
+                text = stringResource(R.string.empty_collection_title),
                 style = MaterialTheme.typography.headlineSmall.copy(
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
                 )
             )
             Text(
-                text = "且向万卷求",
+                text = stringResource(R.string.empty_collection_subtitle),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f)
                 ),

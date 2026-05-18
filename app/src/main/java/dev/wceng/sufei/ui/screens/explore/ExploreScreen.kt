@@ -59,10 +59,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import dev.wceng.sufei.R
 import dev.wceng.sufei.data.model.Poem
 import dev.wceng.sufei.data.model.Poet
 import dev.wceng.sufei.data.model.SearchResult
@@ -137,7 +140,7 @@ fun ExploreScreen(
                 sheetState = sheetState,
             ) {
                 ExploreDrawerContent(
-                    title = if (drawerType == DrawerType.TAG) "标签广场" else "词牌广场",
+                    title = if (drawerType == DrawerType.TAG) stringResource(R.string.explore_tags_plaza) else stringResource(R.string.explore_tunes_plaza),
                     query = drawerSearchQuery,
                     onQueryChange = viewModel::onDrawerSearchQueryChange,
                     items = if (drawerType == DrawerType.TAG) allTags else allTunes,
@@ -187,7 +190,7 @@ fun ExploreDrawerContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
-            placeholder = { Text("搜索内容") },
+            placeholder = { Text(stringResource(R.string.explore_search_placeholder)) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
             trailingIcon = {
                 if (query.isNotEmpty()) {
@@ -242,11 +245,7 @@ fun ExploreContent(
     onAllTagsClick: () -> Unit,
     onAllTunesClick: () -> Unit,
 ) {
-    val dynasties = listOf(
-        "唐代", "宋代", "元代", "明代", "清代",
-        "魏晋", "南北朝", "两汉", "先秦", "隋代",
-        "五代", "金朝", "近代", "现代", "当代"
-    )
+    val dynasties = stringArrayResource(R.array.dynasties).toList()
 
     val dynastyListState = rememberLazyListState()
     val tuneListState = rememberLazyListState()
@@ -289,7 +288,7 @@ fun ExploreContent(
                     onSearch = { },
                     expanded = false,
                     onExpandedChange = { },
-                    placeholder = { Text("搜索诗人、标题、内容") },
+                    placeholder = { Text(stringResource(R.string.explore_main_search_placeholder)) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
@@ -370,7 +369,7 @@ fun ExploreContent(
         ) {
             if (searchResult.poets.isNotEmpty()) {
                 item(span = StaggeredGridItemSpan.FullLine) {
-                    SectionTitle("诗人")
+                    SectionTitle(stringResource(R.string.explore_section_poet))
                 }
                 items(searchResult.poets, key = { "poet_${it.id}" }) { poet ->
                     PoetPreviewCard(poet = poet, onClick = { onPoetClick(poet.id) })
@@ -379,7 +378,7 @@ fun ExploreContent(
 
             if (searchResult.poems.isNotEmpty()) {
                 item(span = StaggeredGridItemSpan.FullLine) {
-                    SectionTitle("诗词")
+                    SectionTitle(stringResource(R.string.explore_section_poem))
                 }
                 items(searchResult.poems, key = { "poem_${it.poem.id}" }) { userPoem ->
                     PoemPreviewCard(userPoem = userPoem, onClick = { onPoemClick(userPoem.poem.id) })

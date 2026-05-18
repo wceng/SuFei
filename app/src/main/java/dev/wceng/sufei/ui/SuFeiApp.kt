@@ -14,6 +14,7 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import dev.wceng.sufei.ui.navigation.Collection
@@ -59,8 +60,8 @@ fun SuFeiApp(
                     onClick = {
                         navigator.navigateToTopLevelDestination(tab.toRoute())
                     },
-                    icon = { Icon(tab.icon, contentDescription = tab.title) },
-                    label = { Text(tab.title) }
+                    icon = { Icon(tab.icon, contentDescription = stringResource(tab.titleRes)) },
+                    label = { Text(stringResource(tab.titleRes)) }
                 )
             }
         },

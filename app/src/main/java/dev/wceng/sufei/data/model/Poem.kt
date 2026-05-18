@@ -1,5 +1,8 @@
 package dev.wceng.sufei.data.model
 
+import dev.wceng.sufei.data.local.room.entity.PoemEntity
+import dev.wceng.sufei.data.local.room.entity.toPoem
+import dev.wceng.sufei.util.convert
 import kotlinx.serialization.Serializable
 
 /**
@@ -32,7 +35,15 @@ data class UserPoem(
      * 辅助构造函数：从 Poem 和 UserPreferences 中创建 UserPoem
      */
     constructor(poem: Poem, userPreferences: UserPreferences) : this(
-        poem = poem,
+        poem = poem.convert(userPreferences.chineseVariant),
         isFavorite = userPreferences.favoritePoemIds.contains(poem.id)
+    )
+
+    /**
+     * 辅助构造函数：从 PoemEntity 和 UserPreferences 中创建 UserPoem
+     */
+    constructor(entity: PoemEntity, userPreferences: UserPreferences) : this(
+        poem = entity.toPoem().convert(userPreferences.chineseVariant),
+        isFavorite = userPreferences.favoritePoemIds.contains(entity.id)
     )
 }

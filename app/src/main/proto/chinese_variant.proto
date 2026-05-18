@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option java_package = "dev.wceng.sufei.data.local.datastore";
+option java_multiple_files = true;
+
+enum ChineseVariantProto {
+  UNSPECIFIED = 0;     // 未指定，将根据系统语言自动检测
+  SIMPLIFIED = 1;      // 大陆简体
+  TRADITIONAL_HK = 2;  // 香港繁体
+  TRADITIONAL_TW = 3;  // 台湾繁体
+}

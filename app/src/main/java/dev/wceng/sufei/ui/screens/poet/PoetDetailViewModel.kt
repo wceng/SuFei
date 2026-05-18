@@ -6,6 +6,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.wceng.sufei.R
 import dev.wceng.sufei.data.model.Poet
 import dev.wceng.sufei.data.model.UserPoem
 import dev.wceng.sufei.data.repository.PoemRepository
@@ -24,7 +25,7 @@ sealed interface PoetDetailUiState {
         val poems: List<UserPoem>
     ) : PoetDetailUiState
 
-    data class Error(val message: String) : PoetDetailUiState
+    data class Error(val messageRes: Int) : PoetDetailUiState
 }
 
 @HiltViewModel(assistedFactory = PoetDetailViewModel.Factory::class)
@@ -54,10 +55,10 @@ class PoetDetailViewModel @AssistedInject constructor(
                     PoetDetailUiState.Success(poet, poems)
                 }
             } else {
-                flowOf(PoetDetailUiState.Error("未找到该诗人信息"))
+                flowOf(PoetDetailUiState.Error(R.string.error_poet_not_found))
             }
         }
-        .catch { emit(PoetDetailUiState.Error(it.message ?: "加载失败")) }
+        .catch { emit(PoetDetailUiState.Error(R.string.error_load_failed)) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
