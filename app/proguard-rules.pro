@@ -27,3 +27,15 @@
 
 # Keep DataStore serializers
 -keep class * implements androidx.datastore.core.Serializer { *; }
+
+# OpenCC4J - 保持所有类及成员（特别是反射调用的构造函数）
+-keep class com.github.houbb.opencc4j.** { *; }
+-dontwarn com.github.houbb.opencc4j.**
+
+# Heaven - OpenCC4J 依赖的工具库，负责反射实例化逻辑
+-keep class com.github.houbb.heaven.** { *; }
+-dontwarn com.github.houbb.heaven.**
+
+# nlp-common - 可能涉及的分词相关依赖
+-keep class com.github.houbb.nlp.common.** { *; }
+-dontwarn com.github.houbb.nlp.common.**
