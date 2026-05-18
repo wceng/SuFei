@@ -1,6 +1,5 @@
 *.iml
 .gradle
-.agents
 /local.properties
 /.idea/caches
 /.idea/libraries
@@ -18,3 +17,4 @@ local.properties
 # APKs
 *.apk
 app/release/
+/.agents/
