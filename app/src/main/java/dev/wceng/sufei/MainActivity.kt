@@ -1,21 +1,25 @@
 package dev.wceng.sufei
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import dagger.hilt.android.AndroidEntryPoint
-import dev.wceng.sufei.data.model.ChineseVariant
 import dev.wceng.sufei.data.model.UserPreferences
+import dev.wceng.sufei.widget.DailyPoemWidgetReceiver
 import dev.wceng.sufei.data.repository.ImportState
 import dev.wceng.sufei.data.repository.UserPreferencesRepository
 import dev.wceng.sufei.ui.SuFeiApp
 import dev.wceng.sufei.ui.navigation.EntryProviderInstaller
+import dev.wceng.sufei.ui.navigation.Detail
 import dev.wceng.sufei.ui.navigation.Explore
 import dev.wceng.sufei.ui.navigation.Navigator
 import dev.wceng.sufei.ui.screens.splash.SplashScreen
@@ -57,6 +61,13 @@ class MainActivity : AppCompatActivity() {
                 val importState by splashViewModel.importState.collectAsState()
 
                 if (importState is ImportState.Success) {
+                    LaunchedEffect(Unit) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+                            GlanceAppWidgetManager(this@MainActivity)
+                                .setWidgetPreviews(DailyPoemWidgetReceiver::class)
+                        }
+                    }
+
                     // 使用注入的单例 navigator，确保全站状态同步
                     SuFeiApp(
                         navigator = navigator,
@@ -76,6 +87,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleIntent(intent: Intent?) {
         if (intent == null) return
+
+        // Widget click 通过 actionStartActivity 传递 poem_id extra，不设置 action
+        val poemId = intent.getStringExtra("poem_id")
+        if (poemId != null) {
+            navigator.goTo(Detail(id = poemId))
+            return
+        }
 
         when (intent.action) {
             Intent.ACTION_PROCESS_TEXT -> {
