@@ -29,7 +29,7 @@ import dev.wceng.sufei.data.model.Poem
 import dev.wceng.sufei.data.model.UserPoem
 import dev.wceng.sufei.ui.theme.NotoSerifSC
 import dev.wceng.sufei.ui.theme.SuFeiTheme
-import dev.wceng.sufei.util.ChineseConverter
+import dev.wceng.sufei.util.PoemExtractor
 
 @Composable
 fun HomeScreen(
@@ -124,55 +124,6 @@ private fun MultiColumnVerticalText(
     }
 }
 
-/**
- * 判断是否为词/曲
- */
-private fun isCi(poem: Poem): Boolean {
-    // 使用简体进行逻辑判断，确保不受繁简体转换影响
-    if (poem.tags.any { tag ->
-        val sTag = ChineseConverter.toSimplified(tag)
-        sTag.contains("词") || sTag.contains("曲") || sTag.contains("诗余")
-    }) return true
-    if (poem.title.contains("·") || poem.title.contains("・")) return true
-
-    val lines = poem.content.lines().filter { it.isNotBlank() }
-    if (lines.isEmpty()) return false
-    val lengths = lines.map { it.filter { char -> char.isLetterOrDigit() }.length }
-    val isRegularPoem = lengths.all { it == 5 || it == 7 } && lengths.distinct().size == 1
-
-    return !isRegularPoem
-}
-
-/**
- * 提取精彩片段，确保是完整句子
- */
-private fun extractHighlight(poem: Poem): List<String> {
-    val content = poem.content
-    val isCiPoem = isCi(poem)
-
-    val fullSentences = content
-        .split(Regex("(?<=[。！？])"))
-        .map { it.trim() }
-        .filter { it.isNotBlank() && it.length > 2 }
-
-    if (fullSentences.isEmpty()) return listOf(content.take(12))
-
-    val targetFullSentence = if (isCiPoem) {
-        fullSentences.last()
-    } else {
-        val allPhrases = content.split(Regex("(?<=[，。！？])")).map { it.trim() }.filter { it.isNotEmpty() }
-        when {
-            allPhrases.size >= 8 && fullSentences.size >= 2 -> fullSentences[1]
-            else -> fullSentences.first()
-        }
-    }
-
-    return targetFullSentence
-        .split(Regex("(?<=[，；。！？])"))
-        .map { it.trim() }
-        .filter { it.isNotEmpty() }
-}
-
 @Composable
 private fun HomeContent(
     userPoem: UserPoem,
@@ -180,7 +131,7 @@ private fun HomeContent(
     onFavoriteToggle: (Boolean) -> Unit
 ) {
     val poem = userPoem.poem
-    val displayLines = remember(poem.content) { extractHighlight(poem) }
+    val displayLines = remember(poem) { PoemExtractor.extractHighlight(poem) }
     val context = LocalContext.current
 
     Box(

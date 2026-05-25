@@ -24,7 +24,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.wceng.sufei.R
-import dev.wceng.sufei.data.model.Poem
 import dev.wceng.sufei.data.model.Poet
 import dev.wceng.sufei.data.model.UserPoem
 

@@ -22,6 +22,10 @@
     <string name="variant_traditional_hk">繁体中文（中国香港）</string>
     <string name="variant_traditional_tw">繁体中文（中国台湾）</string>
 
+    <!-- Widgets -->
+    <string name="widget_daily_poem_name">每日一言</string>
+    <string name="widget_daily_poem_desc">显示今日推荐诗词</string>
+
     <!-- Explore -->
     <string-array name="dynasties">
         <item>唐代</item>

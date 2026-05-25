@@ -17,16 +17,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreHoriz
@@ -172,6 +172,8 @@ fun ExploreDrawerContent(
     selectedItem: String?,
     onItemClick: (String) -> Unit
 ) {
+    val chunkedItems = remember(items) { items.chunked(50) }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -204,14 +206,18 @@ fun ExploreDrawerContent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Box(modifier = Modifier.weight(1f)) {
-            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 16.dp),
+            modifier = Modifier.weight(1f)
+        ) {
+            items(chunkedItems) { chunk ->
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    items.forEach { item ->
+                    chunk.forEach { item ->
                         FilterChip(
                             selected = selectedItem == item,
                             onClick = { onItemClick(item) },
@@ -219,8 +225,6 @@ fun ExploreDrawerContent(
                         )
                     }
                 }
-                // 底部留白，避免被导航栏遮挡
-                Spacer(modifier = Modifier.height(WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 16.dp))
             }
         }
     }
@@ -489,6 +493,25 @@ fun ExploreContentPreview() {
             onPoetClick = {},
             onAllTagsClick = {},
             onAllTunesClick = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ExploreDrawerContentPreview() {
+    SuFeiTheme {
+        ExploreDrawerContent(
+            title = "所有标签",
+            query = "",
+            onQueryChange = {},
+            items = listOf(
+                "唐诗三百首", "宋词三百首", "古诗三百首", "送别", "思乡",
+                "山水", "边塞", "咏物", "抒情", "爱情",
+                "爱国", "哲理", "闺怨", "豪放", "婉约"
+            ),
+            selectedItem = "送别",
+            onItemClick = {}
         )
     }
 }

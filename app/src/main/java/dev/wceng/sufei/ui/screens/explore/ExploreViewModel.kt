@@ -99,7 +99,7 @@ class ExploreViewModel @AssistedInject constructor(
     // 所有标签/词牌数据（供抽屉展示）
     val allTags: StateFlow<List<String>> = combine(
         poemRepository.getAllTags(),
-        _drawerSearchQuery
+        _drawerSearchQuery.debounce(300)
     ) { tags, query ->
         tags.map { it.name }
             .filter { it.contains(query, ignoreCase = true) }
@@ -111,7 +111,7 @@ class ExploreViewModel @AssistedInject constructor(
 
     val allTunes: StateFlow<List<String>> = combine(
         poemRepository.getAllTunes(),
-        _drawerSearchQuery
+        _drawerSearchQuery.debounce(300)
     ) { tunes, query ->
         tunes.map { it.name }
             .filter { it.contains(query, ignoreCase = true) }
