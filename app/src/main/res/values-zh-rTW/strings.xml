@@ -22,6 +22,15 @@
     <string name="variant_traditional_hk">繁體中文（中國香港）</string>
     <string name="variant_traditional_tw">繁體中文（中國台灣）</string>
 
+    <!-- Widgets -->
+    <string name="widget_daily_poem_name">每日一言</string>
+    <string name="widget_daily_poem_desc">顯示今日推薦詩詞</string>
+    <string name="widget_bedside_poem_name">枕邊詩</string>
+    <string name="widget_bedside_poem_desc">將喜歡的詩詞固定到桌面</string>
+    <string name="action_pin_widget">固定到桌面</string>
+    <string name="widget_daily_poem_loading">載入中…</string>
+    <string name="widget_bedside_poem_empty">請在詳情頁\n點擊 Pin 固定詩詞</string>
+
     <!-- Explore -->
     <string-array name="dynasties">
         <item>唐代</item>

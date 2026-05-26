@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -8,6 +10,14 @@ plugins {
     alias(libs.plugins.kotlin.android)
 }
 
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(keystorePropertiesFile.inputStream())
+} else {
+    logger.warn("keystore.properties file not found.")
+}
+
 android {
     namespace = "dev.wceng.sufei"
     compileSdk = 36
@@ -16,10 +26,21 @@ android {
         applicationId = "dev.wceng.sufei"
         minSdk = 23
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.4.0"
+        versionCode = 6
+        versionName = "1.5.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        create("release") {
+            if (keystorePropertiesFile.exists()) {
+                storeFile = file(keystoreProperties.getProperty("releaseKeyStore"))
+                storePassword = keystoreProperties.getProperty("releaseStorePassword")
+                keyAlias = keystoreProperties.getProperty("releaseKeyAlias")
+                keyPassword = keystoreProperties.getProperty("releaseKeyPassword")
+            }
+        }
     }
 
     buildTypes {
@@ -29,6 +50,7 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.findByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

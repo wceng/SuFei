@@ -26,6 +26,7 @@ import androidx.glance.layout.Column
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
+import androidx.glance.layout.width
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.wrapContentSize
@@ -130,6 +131,7 @@ private fun PoemCard(userPoem: UserPoem) {
                 color = GlanceTheme.colors.onBackground,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
+                fontFamily = FontFamily.Serif,
                 textAlign = TextAlign.Center
             ),
             maxLines = 2
@@ -143,6 +145,7 @@ private fun PoemCard(userPoem: UserPoem) {
             style = TextStyle(
                 fontSize = 13.sp,
                 color = GlanceTheme.colors.onBackground,
+                fontFamily = FontFamily.Serif,
                 textAlign = TextAlign.Center
             ),
             maxLines = 1
@@ -153,7 +156,7 @@ private fun PoemCard(userPoem: UserPoem) {
         // 妃红分隔线（固定）
         Box(
             modifier = GlanceModifier
-                .fillMaxWidth()
+                .width(48.dp)
                 .height(1.dp)
                 .background(LocalFeihongColor.current)
         ) { }

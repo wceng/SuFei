@@ -19,3 +19,6 @@ local.properties
 app/release/
 /.agents/
 .idea/
+
+# Signing
+keystore.properties

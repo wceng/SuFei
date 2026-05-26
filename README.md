@@ -15,13 +15,16 @@
 ## 📸 视觉预览 (Screenshots)
 
 <p align="center">
-  <img src="screenshots/home.png" width="13%" />
-  <img src="screenshots/explore.png" width="13%" />
-  <img src="screenshots/collection.png" width="13%" />
-  <img src="screenshots/poem_detail.png" width="13%" />
-  <img src="screenshots/poet_detail.png" width="13%" />
-  <img src="screenshots/search_result.png" width="13%" />
-  <img src="screenshots/settings.png" width="13%" />
+  <img src="screenshots/home.png" width="20%" />
+  <img src="screenshots/explore.png" width="20%" />
+  <img src="screenshots/collection.png" width="20%" />
+  <img src="screenshots/poem_detail.png" width="20%" />
+</p>
+<p align="center">
+  <img src="screenshots/poet_detail.png" width="20%" />
+  <img src="screenshots/search_result.png" width="20%" />
+  <img src="screenshots/settings.png" width="20%" />
+  <img src="screenshots/widget.png" width="20%" />
 </p>
 
 > [!TIP]
@@ -31,25 +34,27 @@
 
 ## ✨ 核心特性
 
-- 🏛️ **现代架构**：完全基于 **Now in Android** 的响应式编程模型，遵循 Clean Architecture。
-- 📖 **沉浸式阅读**：模拟宣纸质感，支持衬线字体，针对长短句自动优化的排版算法。
-- 🎙️ **随心朗读**：集成系统 TTS 引擎，支持诗词全文朗读及实时句子高亮，助你领略音韵之美。
-- 📅 **每日偶遇**：智能提取算法，每 1 小时自动在首页推荐一段意境完整的经典诗句。
-- 🔍 **万卷搜寻**：三级极简过滤（朝代/词牌/标签），毫秒级全文检索。
-- 🎭 **文体感知**：自动识别诗/词/曲，针对“词”自动提取精华结拍（末尾句）进行展示。
-- 🎨 **优雅动效**：基于 Navigation 3 实现全局淡入淡出，原生支持 Android 13+ **预测性返回**手势。
-- 🔄 **状态保留**：深度优化导航逻辑，在顶级页面间切换时完美保留页面状态（如滚动位置）。
+- 🏛️ **现代架构**：遵循 Clean Architecture 规范，代码分层清晰，易于维护和扩展。
+- 📖 **沉浸式阅读**：宣纸质感背景与衬线字体，排版随诗词长短句自动适配，自然舒适。
+- 🎙️ **随心朗读**：接入系统 TTS 引擎，支持全文朗读与逐句高亮，感受诗词的韵律之美。
+- 📅 **每日偶遇**：每时段在首页推荐一段意境完整的经典诗句，不期而遇的阅读体验。
+- 🔍 **万卷搜寻**：通过朝代、词牌、标签三级过滤，快速定位心仪的诗词。
+- 🎭 **文体感知**：自动识别诗、词、曲不同体裁，对词作优先展示其结尾精华句。
+- 🎨 **优雅动效**：页面切换采用淡入淡出过渡，原生支持 Android 13+ 预测性返回手势。
+- 🏠 **桌面小组件**：提供"每日一言"与"枕边诗"两种小组件，让诗词融入日常。
 
 ---
 
 ## 📚 数据集 (Dataset)
 
-本应用内置了海量的中国传统文学数据库，所有数据均存储于本地 Room 数据库中，支持离线查询：
+本应用内置了涵盖二十万余首作品的本地诗词库，支持离线查阅：
 
-- 📜 **二十万余首**：涵盖诗、词、曲、文言文等多种体裁。
-- 🏛️ **全朝代覆盖**：从先秦、两汉、魏晋、南北朝、唐、宋、元、明、清至近现代。
-- 👤 **万名诗人**：收录了 10,000+ 位文学家的生平简介及其代表作品。
-- 🏷️ **精细分类**：内置上千个意境标签与词牌名分类，助你精准触达心中所想。
+- 📜 **体裁丰富**：诗、词、曲、文言文等，一应俱全。
+- 🏛️ **通览古今**：从先秦到近现代，跨越各朝各代。
+- 👤 **万名诗人**：收录了 10,000 余位文学家的生平与代表作。
+- 🏷️ **精细分类**：上千个意境标签与词牌分类，让你总能找到想要的。
+
+> 数据来源：[Poetry_CN - OpenDataLab](https://opendatalab.org.cn/ABear/Poetry_CN)、[poems-db - GitHub](https://github.com/yxcs/poems-db)
 
 ---
 
@@ -58,7 +63,7 @@
 | 维度 | 技术选型 |
 | :--- | :--- |
 | **UI** | Jetpack Compose (1.7+) |
-| **Navigation** | Navigation 3 (Experimental Compose API) |
+| **Navigation** | Navigation 3  |
 | **Splash** | Core SplashScreen API |
 | **DI** | Hilt |
 | **Database** | Room |
@@ -78,7 +83,7 @@
 
 ## 🚀 快速开始
 
-1. **环境**：确保你的 Android Studio 版本为 **Ladybug (2024.2.1)** 或更新。
+1. **环境**：Android Studio 版本为最新即可。
 2. **克隆**：`git clone https://github.com/wceng/SuFei.git`
 3. **运行**：本项目使用 `libs.versions.toml` 管理依赖，直接 Sync Gradle 即可运行。
 
@@ -89,5 +94,3 @@
 本项目基于 **MIT License** 开源。欢迎任何形式的 PR 和 Issue！
 
 ---
-
-<p align="center"> 如果这个项目触动了你的文人情怀，请点一个 <b>Star</b> ⭐ 鼓励我们。 </p>
