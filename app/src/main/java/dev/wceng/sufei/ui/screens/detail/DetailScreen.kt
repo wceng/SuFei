@@ -1,5 +1,6 @@
 package dev.wceng.sufei.ui.screens.detail
 
+import android.os.Build
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,16 +42,20 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import dev.wceng.sufei.R
@@ -57,6 +63,10 @@ import dev.wceng.sufei.data.model.Poem
 import dev.wceng.sufei.data.model.UserPoem
 import dev.wceng.sufei.data.model.UserPreferences
 import dev.wceng.sufei.ui.theme.SuFeiTheme
+import dev.wceng.sufei.util.extractVerses
+import dev.wceng.sufei.widget.BedsidePoemWidget
+import dev.wceng.sufei.widget.BedsidePoemWidgetReceiver
+import kotlinx.coroutines.launch
 
 @Composable
 fun DetailScreen(
@@ -66,6 +76,8 @@ fun DetailScreen(
     onDynastyClick: (String) -> Unit,
     viewModel: DetailViewModel
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val uiState by viewModel.uiState.collectAsState()
     val isTtsPlaying by viewModel.isTtsPlaying.collectAsState()
     val currentSentenceIndex by viewModel.currentSentenceIndex.collectAsState()
@@ -95,6 +107,20 @@ fun DetailScreen(
         },
         onTagClick = onTagClick,
         onDynastyClick = onDynastyClick,
+        onPinToWidget = {
+            viewModel.pinToWidget()
+            scope.launch {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+                    GlanceAppWidgetManager(context)
+                        .setWidgetPreviews(BedsidePoemWidgetReceiver::class)
+                }
+                GlanceAppWidgetManager(context).requestPinGlanceAppWidget(
+                    receiver = BedsidePoemWidgetReceiver::class.java,
+                    preview = BedsidePoemWidget(),
+                    previewState = DpSize(250.dp, 180.dp)
+                )
+            }
+        },
         onFavoriteToggle = { isFavorite ->
             viewModel.toggleFavorite(isFavorite)
         },
@@ -114,6 +140,7 @@ fun DetailContent(
     onPoetClick: (String) -> Unit,
     onTagClick: (String) -> Unit,
     onDynastyClick: (String) -> Unit,
+    onPinToWidget: () -> Unit,
     onFavoriteToggle: (Boolean) -> Unit,
     onTtsToggle: (List<String>) -> Unit
 ) {
@@ -147,6 +174,12 @@ fun DetailContent(
                                 imageVector = if (isTtsPlaying) Icons.Default.Stop else Icons.AutoMirrored.Filled.VolumeUp,
                                 contentDescription = if (isTtsPlaying) actionTtsStop else actionTtsStart,
                                 tint = if (isTtsPlaying) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                            )
+                        }
+                        IconButton(onClick = onPinToWidget) {
+                            Icon(
+                                imageVector = Icons.Default.PushPin,
+                                contentDescription = stringResource(R.string.action_pin_widget)
                             )
                         }
                         IconButton(onClick = { onFavoriteToggle(!userPoem.isFavorite) }) {
@@ -297,14 +330,12 @@ fun PoemReader(
         val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
         val isSelectionEnabled = lifecycleState.isAtLeast(Lifecycle.State.RESUMED)
 
-        val paragraphs = remember(poem.content) { poem.content.split("\n") }
-
         if (isSelectionEnabled) {
             SelectionContainer {
-                PoemBody(paragraphs, userPreferences, currentSentenceIndex)
+                PoemBody(poem.content, userPreferences, currentSentenceIndex)
             }
         } else {
-            PoemBody(paragraphs, userPreferences, currentSentenceIndex)
+            PoemBody(poem.content, userPreferences, currentSentenceIndex)
         }
         
         if (!poem.notes.isNullOrBlank() || !poem.translation.isNullOrBlank() || !poem.intro.isNullOrBlank() || !poem.background.isNullOrBlank()) {
@@ -324,7 +355,8 @@ fun PoemReader(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun PoemBody(paragraphs: List<String>, userPreferences: UserPreferences, currentSentenceIndex: Int?) {
+private fun PoemBody(content: String, userPreferences: UserPreferences, currentSentenceIndex: Int?) {
+    val paragraphs = content.split("\n")
     var globalVerseIndex = 3 // 从 3 开始，因为 0:标题, 1:朝代, 2:作者
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         paragraphs.forEach { paragraph ->
@@ -333,7 +365,7 @@ private fun PoemBody(paragraphs: List<String>, userPreferences: UserPreferences,
                 verticalArrangement = Arrangement.spacedBy((12 * userPreferences.lineHeightMultiplier).dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                val verses = paragraph.split(Regex("(?<=[，。！？；])")).filter { it.isNotBlank() }
+                val verses = extractVerses(paragraph)
                 verses.forEach { verse ->
                     val isHighlight = currentSentenceIndex == globalVerseIndex
                     Text(
@@ -412,6 +444,7 @@ fun DetailContentPreview() {
             onPoetClick = {},
             onTagClick = {},
             onDynastyClick = {},
+            onPinToWidget = {},
             onFavoriteToggle = {},
             onTtsToggle = {}
         )

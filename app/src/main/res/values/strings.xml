@@ -25,6 +25,11 @@
     <!-- Widgets -->
     <string name="widget_daily_poem_name">每日一言</string>
     <string name="widget_daily_poem_desc">显示今日推荐诗词</string>
+    <string name="widget_bedside_poem_name">枕边诗</string>
+    <string name="widget_bedside_poem_desc">固定喜欢的诗词到桌面</string>
+    <string name="action_pin_widget">固定到桌面</string>
+    <string name="widget_daily_poem_loading">加载中…</string>
+    <string name="widget_bedside_poem_empty">请在详情页\n点击 Pin 固定诗词</string>
 
     <!-- Explore -->
     <string-array name="dynasties">

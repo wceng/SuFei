@@ -64,7 +64,9 @@ class MainActivity : AppCompatActivity() {
                     LaunchedEffect(Unit) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
                             GlanceAppWidgetManager(this@MainActivity)
-                                .setWidgetPreviews(DailyPoemWidgetReceiver::class)
+                                .setWidgetPreviews(
+                                    DailyPoemWidgetReceiver::class,
+                                )
                         }
                     }
 

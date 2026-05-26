@@ -72,6 +72,10 @@ class DetailViewModel @AssistedInject constructor(
         }
     }
 
+    fun pinToWidget() {
+        poemRepository.setPendingWidgetPoem(detail.id)
+    }
+
     fun toggleTts(sentences: List<String>) {
         if (isTtsPlaying.value) {
             ttsManager.stop()

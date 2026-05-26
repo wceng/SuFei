@@ -13,7 +13,8 @@ data class UserPreferences(
     val fontFamilyName: String = "Serif",
     val dailyPoemId: String = "",
     val lastUpdateMillis: Long = 0L,
-    val chineseVariant: ChineseVariant = ChineseVariant.SIMPLIFIED
+    val chineseVariant: ChineseVariant = ChineseVariant.SIMPLIFIED,
+    val pinnedWidgetPoems: Map<Int, String> = emptyMap()
 )
 
 enum class ChineseVariant(val labelRes: Int) {

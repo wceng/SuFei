@@ -17,4 +17,6 @@ message UserPreferences {
   int64 last_update_millis = 7;
   // 中文变体
   ChineseVariantProto chinese_variant = 8;
+  // 桌面小组件已固定的诗词映射 (appWidgetId → poemId)
+  map<int64, string> pinned_widget_poems = 9;
 }

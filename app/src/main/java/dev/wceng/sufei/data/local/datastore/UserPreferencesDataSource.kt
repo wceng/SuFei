@@ -24,6 +24,7 @@ class UserPreferencesDataSource(
                 fontFamilyName = proto.fontFamilyName.ifEmpty { "Serif" },
                 dailyPoemId = proto.dailyPoemId,
                 lastUpdateMillis = proto.lastUpdateMillis,
+                pinnedWidgetPoems = proto.pinnedWidgetPoemsMap.mapKeys { it.key.toInt() },
                 chineseVariant = when (proto.chineseVariant) {
                     ChineseVariantProto.SIMPLIFIED -> ChineseVariant.SIMPLIFIED
                     ChineseVariantProto.TRADITIONAL_HK -> ChineseVariant.TRADITIONAL_HK
@@ -102,6 +103,32 @@ class UserPreferencesDataSource(
                 .setDailyPoemId(poemId)
                 .setLastUpdateMillis(timestamp)
                 .build() 
+        }
+    }
+
+    /**
+     * 解析 widget 实例对应的诗词 ID。
+     * 原子操作：若 appWidgetId 尚未分配且 pendingPoemId 不为空，则写入 map。
+     */
+    suspend fun resolveWidgetPoemId(appWidgetId: Int, pendingPoemId: String?): String? {
+        return try {
+            val updatedPrefs = userPreferencesStore.updateData { prefs ->
+                val existing = prefs.pinnedWidgetPoemsMap[appWidgetId.toLong()]
+                if (!existing.isNullOrEmpty()) {
+                    return@updateData prefs
+                }
+                if (!pendingPoemId.isNullOrEmpty()) {
+                    prefs.toBuilder()
+                        .putPinnedWidgetPoems(appWidgetId.toLong(), pendingPoemId)
+                        .build()
+                } else {
+                    prefs
+                }
+            }
+            val poemId = updatedPrefs.pinnedWidgetPoemsMap[appWidgetId.toLong()]
+            if (poemId.isNullOrEmpty()) null else poemId
+        } catch (ioException: IOException) {
+            null
         }
     }
 

@@ -39,6 +39,17 @@ class PoemRepositoryImpl @Inject constructor(
     private val userPreferencesDataSource: UserPreferencesDataSource
 ) : PoemRepository {
 
+    @Volatile
+    private var pendingWidgetPoemId: String? = null
+
+    override fun setPendingWidgetPoem(poemId: String) {
+        pendingWidgetPoemId = poemId
+    }
+
+    override suspend fun resolveWidgetPoemId(appWidgetId: Int): String? {
+        return userPreferencesDataSource.resolveWidgetPoemId(appWidgetId, pendingWidgetPoemId)
+    }
+
     override fun getAllUserPoems(limit: Int): Flow<List<UserPoem>> {
         return combine(
             poemDao.getAllPoems(limit),

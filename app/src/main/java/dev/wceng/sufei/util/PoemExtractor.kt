@@ -22,13 +22,15 @@ object PoemExtractor {
         return !isRegularPoem
     }
 
+    private val PUNCTUATION_REGEX = Regex("\\p{P}")
+
     /**
      * 提取精华句子，确保是完整句子
      * - 词/曲：取最后一句
      * - 诗：取第二句（篇幅短则取第一句）
      * 返回按标点分割的短语列表
      */
-    fun extractHighlight(poem: Poem): List<String> {
+    fun extractHighlight(poem: Poem, keepPunctuation: Boolean = false): List<String> {
         val content = poem.content
         val isCiPoem = isCi(poem)
 
@@ -49,9 +51,12 @@ object PoemExtractor {
             }
         }
 
-        return targetFullSentence
+        val phrases = targetFullSentence
             .split(Regex("(?<=[，；。！？])"))
             .map { it.trim() }
             .filter { it.isNotEmpty() }
+
+        return if (keepPunctuation) phrases
+        else phrases.map { it.replace(PUNCTUATION_REGEX, "").trim() }.filter { it.isNotEmpty() }
     }
 }

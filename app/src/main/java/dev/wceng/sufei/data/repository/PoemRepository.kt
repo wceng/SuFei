@@ -80,4 +80,14 @@ interface PoemRepository {
      * 获取指定诗人的所有作品
      */
     fun getPoemsByPoet(authorName: String): Flow<List<UserPoem>>
+
+    /**
+     * 设置待固定的诗词 ID（用户点击 Pin 后写入内存，不持久化）
+     */
+    fun setPendingWidgetPoem(poemId: String)
+
+    /**
+     * 解析 widget 实例对应的诗词 ID（Widget provideGlance 时调用）
+     */
+    suspend fun resolveWidgetPoemId(appWidgetId: Int): String?
 }

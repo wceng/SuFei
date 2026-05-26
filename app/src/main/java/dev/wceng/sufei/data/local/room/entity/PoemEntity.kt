@@ -3,6 +3,7 @@ package dev.wceng.sufei.data.local.room.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import dev.wceng.sufei.data.model.Poem
+import dev.wceng.sufei.util.cleanPoemContent
 
 /**
  * 数据库实体类 (Room 内部使用)
@@ -34,7 +35,7 @@ fun PoemEntity.toPoem(): Poem {
         title = title,
         author = author,
         dynasty = dynasty,
-        content = content,
+        content = cleanPoemContent(content),
         tags = tags,
         notes = notes,
         translation = translation,
