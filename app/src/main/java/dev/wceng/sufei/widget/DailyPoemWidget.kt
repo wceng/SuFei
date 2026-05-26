@@ -111,7 +111,7 @@ private fun PoemCard(userPoem: UserPoem) {
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
-            .background(GlanceTheme.colors.background)
+            .then(widgetBackgroundModifier())
             .padding(horizontal = 16.dp, vertical = 12.dp)
             .clickable(
                 onClick = actionStartActivity<MainActivity>(
@@ -169,7 +169,8 @@ private fun MediumContent(text: String, poem: Poem) {
             modifier = GlanceModifier
                 .width(32.dp)
                 .height(1.dp)
-                .background(LocalFeihongColor.current)        ) { }
+                .background(LocalFeihongColor.current)
+        ) { }
         Spacer(modifier = GlanceModifier.height(12.dp))
         Text(
             text = "${poem.title}  ·  ${poem.author}",
@@ -302,14 +303,17 @@ private fun ErrorContent(text: String) {
     Column(
         modifier = GlanceModifier
             .fillMaxSize()
-            .background(GlanceTheme.colors.background)
+            .then(widgetBackgroundModifier())
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = text,
-            style = TextStyle(fontSize = 12.sp)
+            style = TextStyle(
+                fontSize = 12.sp,
+                color = GlanceTheme.colors.onBackground,
+            )
         )
     }
 }

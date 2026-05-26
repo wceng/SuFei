@@ -115,7 +115,7 @@ private fun PoemCard(userPoem: UserPoem) {
     Column(
         modifier = GlanceModifier
             .fillMaxSize()
-            .background(GlanceTheme.colors.background)
+            .then(widgetBackgroundModifier())
             .padding(horizontal = 20.dp, vertical = 24.dp)
             .clickable(
                 onClick = actionStartActivity<MainActivity>(
@@ -170,7 +170,10 @@ private fun PoemCard(userPoem: UserPoem) {
         ) {
             paragraphs.forEach { paragraph ->
                 item {
-                    Box(contentAlignment = Alignment.Center, modifier = GlanceModifier.fillMaxWidth()) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = GlanceModifier.fillMaxWidth()
+                    ) {
                         Text(
                             text = paragraph,
                             modifier = GlanceModifier.wrapContentSize(),
@@ -196,14 +199,17 @@ private fun EmptyPlaceholder(text: String) {
     Column(
         modifier = GlanceModifier
             .fillMaxSize()
-            .background(GlanceTheme.colors.background)
+            .then(widgetBackgroundModifier())
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = text,
-            style = TextStyle(fontSize = 12.sp)
+            style = TextStyle(
+                fontSize = 12.sp,
+                color = GlanceTheme.colors.onBackground
+            )
         )
     }
 }
