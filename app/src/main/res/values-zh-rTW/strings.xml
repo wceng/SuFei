@@ -2,7 +2,7 @@
     <string name="app_name">素扉</string>
 
     <!-- Tabs -->
-    <string name="tab_home">今日</string>
+    <string name="tab_home">偶遇</string>
     <string name="tab_explore">萬卷</string>
     <string name="tab_collection">枕邊</string>
     <string name="tab_settings">設定</string>

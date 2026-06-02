@@ -42,9 +42,14 @@ interface PoemRepository {
     ): Flow<SearchResult>
 
     /**
-     * 获取随机诗词 (内部处理每日更新逻辑)
+     * 获取高质量随机诗词
      */
     fun getRandomUserPoem(): Flow<UserPoem?>
+
+    /**
+     * 获取一系列高质量随机诗词
+     */
+    fun getRandomUserPoems(limit: Int = 10): Flow<List<UserPoem>>
 
     /**
      * 获取收藏的诗词

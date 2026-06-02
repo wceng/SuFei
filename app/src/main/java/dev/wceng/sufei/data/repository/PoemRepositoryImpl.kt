@@ -5,7 +5,6 @@ import dev.wceng.sufei.data.local.room.PoemDao
 import dev.wceng.sufei.data.local.room.PoetDao
 import dev.wceng.sufei.data.local.room.TagDao
 import dev.wceng.sufei.data.local.room.TuneDao
-import dev.wceng.sufei.data.local.room.entity.toPoem
 import dev.wceng.sufei.data.local.room.entity.toPoet
 import dev.wceng.sufei.data.local.room.entity.toTag
 import dev.wceng.sufei.data.local.room.entity.toTune
@@ -114,38 +113,22 @@ class PoemRepositoryImpl @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     override fun getRandomUserPoem(): Flow<UserPoem?> {
-        return userPreferencesDataSource.userPreferencesFlow
-            .flatMapLatest { prefs ->
-                val now = System.currentTimeMillis()
-                // 建议间隔：1 小时 (3600000 毫秒)
-                val refreshInterval = 60 * 60 * 1000L
+        return combine(
+            poemDao.getHighQualityRandomPoems(1),
+            userPreferencesDataSource.userPreferencesFlow
+        ) { entities, prefs ->
+            entities.firstOrNull()?.let { UserPoem(it, prefs) }
+        }.flowOn(Dispatchers.IO)
+    }
 
-                if (prefs.dailyPoemId.isEmpty() || (now - prefs.lastUpdateMillis > refreshInterval)) {
-                    flow {
-                        val newPoemEntity = poemDao.getHighQualityRandomPoem().firstOrNull() 
-                            ?: poemDao.getRandomPoem().firstOrNull()
-                        
-                        if (newPoemEntity != null) {
-                            userPreferencesDataSource.updateDailyPoem(newPoemEntity.id, now)
-                            emit(UserPoem(newPoemEntity, prefs))
-                        } else {
-                            emit(null)
-                        }
-                    }
-                } else {
-                    combine(
-                        poemDao.getPoemByIdFlow(prefs.dailyPoemId),
-                        userPreferencesDataSource.userPreferencesFlow
-                    ) { entity, currentPrefs ->
-                        entity?.let {
-                            UserPoem(it, currentPrefs)
-                        }
-                    }
-                }
-            }
-            .flowOn(Dispatchers.IO)
+    override fun getRandomUserPoems(limit: Int): Flow<List<UserPoem>> {
+        return combine(
+            poemDao.getHighQualityRandomPoems(limit),
+            userPreferencesDataSource.userPreferencesFlow
+        ) { entities, prefs ->
+            entities.map { UserPoem(it, prefs) }
+        }.flowOn(Dispatchers.IO)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

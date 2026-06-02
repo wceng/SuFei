@@ -37,15 +37,12 @@ interface PoemDao {
     @Query("SELECT * FROM poems WHERE author = :authorName LIMIT :limit")
     fun getPoemsByAuthor(authorName: String, limit: Int = 20): Flow<List<PoemEntity>>
 
-    @Query("SELECT * FROM poems ORDER BY RANDOM() LIMIT 1")
-    fun getRandomPoem(): Flow<PoemEntity?>
-
     @Query("""
         SELECT * FROM poems 
         WHERE notes IS NOT NULL AND notes != '' 
         AND translation IS NOT NULL AND translation != '' 
         AND intro IS NOT NULL AND intro != '' 
-        ORDER BY RANDOM() LIMIT 1
+        ORDER BY RANDOM() LIMIT :limit
     """)
-    fun getHighQualityRandomPoem(): Flow<PoemEntity?>
+    fun getHighQualityRandomPoems(limit: Int): Flow<List<PoemEntity>>
 }

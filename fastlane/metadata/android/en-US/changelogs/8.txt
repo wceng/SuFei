@@ -1,0 +1,5 @@
+- Introduced a new interactive infinite card stack for the Home screen.
+- Improved swiping gestures for a smoother and more responsive user experience.
+- Refactored poem retrieval to ensure higher quality content with annotations and translations.
+- Simplified data loading logic by removing unnecessary time-based refresh restrictions.
+- Reduced app permissions by removing unused network and wake lock requirements.

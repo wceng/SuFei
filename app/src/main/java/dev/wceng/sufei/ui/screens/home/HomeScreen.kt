@@ -20,15 +20,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import dev.wceng.sufei.R
-import dev.wceng.sufei.data.model.Poem
 import dev.wceng.sufei.data.model.UserPoem
+import dev.wceng.sufei.ui.components.DraggableCard
 import dev.wceng.sufei.ui.theme.NotoSerifSC
-import dev.wceng.sufei.ui.theme.SuFeiTheme
 import dev.wceng.sufei.util.PoemExtractor
 
 @Composable
@@ -47,13 +45,16 @@ fun HomeScreen(
             is HomeUiState.Loading -> {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
+
             is HomeUiState.Success -> {
                 HomeContent(
-                    userPoem = state.userPoem,
-                    onPoemClick = { onPoemClick(state.userPoem.poem.id) },
-                    onFavoriteToggle = { viewModel.toggleFavorite(state.userPoem.poem.id, it) }
+                    userPoems = state.userPoems,
+                    onPoemClick = { onPoemClick(it) },
+                    onFavoriteToggle = { id, isFav -> viewModel.toggleFavorite(id, isFav) },
+                    onSwiped = { viewModel.onCardSwiped() }
                 )
             }
+
             is HomeUiState.Error -> {
                 Text(
                     text = stringResource(state.messageRes),
@@ -65,86 +66,135 @@ fun HomeScreen(
     }
 }
 
-/**
- * 竖排文本组件，支持标点符号特殊处理
- */
-@Composable
-private fun VerticalText(
-    text: String,
-    modifier: Modifier = Modifier,
-    style: androidx.compose.ui.text.TextStyle = LocalTextStyle.current,
-    spacing: androidx.compose.ui.unit.Dp = 4.dp
-) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(spacing)
-    ) {
-        text.forEach { char ->
-            val isPunctuation = char == '，' || char == '。' || char == '；' || char == '！' || char == '？'
-            Text(
-                text = char.toString(),
-                style = if (isPunctuation) style.copy(fontSize = style.fontSize * 0.9f) else style,
-                modifier = if (isPunctuation) {
-                    Modifier.offset(x = 3.dp, y = (-3).dp)
-                } else {
-                    Modifier
-                }
-            )
-        }
-    }
-}
-
-/**
- * 多列竖排文本，用于处理过长的标题
- */
-@Composable
-private fun MultiColumnVerticalText(
-    text: String,
-    modifier: Modifier = Modifier,
-    style: androidx.compose.ui.text.TextStyle = LocalTextStyle.current,
-    spacing: androidx.compose.ui.unit.Dp = 4.dp,
-    columnSpacing: androidx.compose.ui.unit.Dp = 12.dp,
-    maxCharsPerColumn: Int = 8
-) {
-    val columns = text.chunked(maxCharsPerColumn)
-
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(columnSpacing),
-        verticalAlignment = Alignment.Top
-    ) {
-        columns.asReversed().forEach { columnText ->
-            VerticalText(
-                text = columnText,
-                style = style,
-                spacing = spacing
-            )
-        }
-    }
-}
-
 @Composable
 private fun HomeContent(
+    userPoems: List<UserPoem>,
+    onPoemClick: (String) -> Unit,
+    onFavoriteToggle: (String, Boolean) -> Unit,
+    onSwiped: () -> Unit
+) {
+    val context = LocalContext.current
+    // 获取当前顶层诗词用于按钮逻辑
+    val currentPoem = userPoems.firstOrNull()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        // 卡片堆叠层
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 120.dp, top = 60.dp), // 留出下方按钮空间
+            contentAlignment = Alignment.Center
+        ) {
+            if (userPoems.isEmpty()) {
+                CircularProgressIndicator()
+            } else {
+                // 反向遍历以确保第一张在最上面
+                userPoems.asReversed().forEachIndexed { index, userPoem ->
+                    val isTopCard = index == userPoems.size - 1
+
+                    val cardModifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 24.dp, vertical = 48.dp)
+
+                    if (isTopCard) {
+                        DraggableCard(
+                            item = userPoem,
+                            onSwiped = { _, _ -> onSwiped() },
+                            modifier = cardModifier
+                        ) {
+                            PoemCardContent(userPoem, onClick = { onPoemClick(userPoem.poem.id) })
+                        }
+                    } else {
+                        // 底层卡片：略微缩小或偏移以增加层次感 (可选)
+                        Box(modifier = cardModifier) {
+                            PoemCardContent(userPoem, onClick = {})
+                        }
+                    }
+                }
+            }
+        }
+
+        // 底部操作栏（始终绑定顶层卡片）
+        if (currentPoem != null) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(bottom = 48.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // 分享
+                val displayLines =
+                    remember(currentPoem) { PoemExtractor.extractHighlight(currentPoem.poem) }
+                val actionShare = stringResource(R.string.action_share)
+                val sharePoemTitle = stringResource(R.string.share_poem_title)
+                val shareFromApp = stringResource(R.string.share_from_app)
+                val shareFormat = stringResource(R.string.share_content_format)
+
+                IconButton(onClick = {
+                    val shareText = shareFormat.format(
+                        currentPoem.poem.title,
+                        currentPoem.poem.author,
+                        currentPoem.poem.dynasty,
+                        displayLines.joinToString("\n"),
+                        shareFromApp
+                    )
+                    val sendIntent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_TEXT, shareText)
+                        type = "text/plain"
+                    }
+                    context.startActivity(Intent.createChooser(sendIntent, sharePoemTitle))
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = actionShare,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                    )
+                }
+
+                // 收藏
+                IconButton(onClick = {
+                    onFavoriteToggle(
+                        currentPoem.poem.id,
+                        !currentPoem.isFavorite
+                    )
+                }) {
+                    Icon(
+                        imageVector = if (currentPoem.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = stringResource(R.string.action_favorite),
+                        tint = if (currentPoem.isFavorite) Color(0xFFE09E87) else MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                            alpha = 0.4f
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PoemCardContent(
     userPoem: UserPoem,
-    onPoemClick: () -> Unit,
-    onFavoriteToggle: (Boolean) -> Unit
+    onClick: () -> Unit
 ) {
     val poem = userPoem.poem
     val displayLines = remember(poem) { PoemExtractor.extractHighlight(poem) }
-    val context = LocalContext.current
 
-    Box(
+    Surface(
         modifier = Modifier
             .fillMaxSize()
-            .padding(bottom = 80.dp)
+            .clickable(onClick = onClick),
+        color = MaterialTheme.colorScheme.surface,
+        shape = MaterialTheme.shapes.large,
+        tonalElevation = 2.dp,
+        shadowElevation = 0.5.dp
     ) {
         Row(
             modifier = Modifier
-                .align(Alignment.Center)
-                .fillMaxWidth()
-                .padding(horizontal = 48.dp)
-                .clickable(onClick = onPoemClick),
+                .fillMaxSize()
+                .padding(horizontal = 32.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -211,75 +261,64 @@ private fun HomeContent(
                 }
             }
         }
+    }
+}
 
-        Row(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(bottom = 32.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // 分享实现
-            val actionShare = stringResource(R.string.action_share)
-            val sharePoemTitle = stringResource(R.string.share_poem_title)
-            val shareFromApp = stringResource(R.string.share_from_app)
-            val shareFormat = stringResource(R.string.share_content_format)
-            IconButton(onClick = {
-                val shareText = shareFormat.format(
-                    poem.title,
-                    poem.author,
-                    poem.dynasty,
-                    displayLines.joinToString("\n"),
-                    shareFromApp
-                )
-
-                val sendIntent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    putExtra(Intent.EXTRA_TEXT, shareText)
-                    type = "text/plain"
+/**
+ * 竖排文本组件
+ */
+@Composable
+private fun VerticalText(
+    text: String,
+    modifier: Modifier = Modifier,
+    style: androidx.compose.ui.text.TextStyle = LocalTextStyle.current,
+    spacing: androidx.compose.ui.unit.Dp = 4.dp
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(spacing)
+    ) {
+        text.forEach { char ->
+            val isPunctuation =
+                char == '，' || char == '。' || char == '；' || char == '！' || char == '？'
+            Text(
+                text = char.toString(),
+                style = if (isPunctuation) style.copy(fontSize = style.fontSize * 0.9f) else style,
+                modifier = if (isPunctuation) {
+                    Modifier.offset(x = 3.dp, y = (-3).dp)
+                } else {
+                    Modifier
                 }
-                val shareIntent = Intent.createChooser(sendIntent, sharePoemTitle)
-                context.startActivity(shareIntent)
-            }) {
-                Icon(
-                    imageVector = Icons.Default.Share,
-                    contentDescription = actionShare,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-                )
-            }
-
-            IconButton(onClick = { onFavoriteToggle(!userPoem.isFavorite) }) {
-                Icon(
-                    imageVector = if (userPoem.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = stringResource(R.string.action_favorite),
-                    tint = if (userPoem.isFavorite) Color(0xFFE09E87) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-                )
-            }
+            )
         }
     }
 }
 
-@Preview(showBackground = true)
+/**
+ * 多列竖排文本
+ */
 @Composable
-fun HomeScreenPreview() {
-    SuFeiTheme {
-        Box(modifier = Modifier.background(Color(0xFFF8F3E9))) {
-            HomeContent(
-                userPoem = UserPoem(
-                    poem = Poem(
-                        id = "1",
-                        sourceUrl = "",
-                        title = "望岳",
-                        author = "杜甫",
-                        dynasty = "唐",
-                        content = "岱宗夫如何？齐鲁青未了。\n造化钟神秀，阴阳割昏晓。\n荡胸生曾云，决眦入归鸟。\n会当凌绝顶，一览众山小。",
-                        tags = listOf()
-                    ),
-                    isFavorite = false
-                ),
-                onPoemClick = {},
-                onFavoriteToggle = {}
+private fun MultiColumnVerticalText(
+    text: String,
+    modifier: Modifier = Modifier,
+    style: androidx.compose.ui.text.TextStyle = LocalTextStyle.current,
+    spacing: androidx.compose.ui.unit.Dp = 4.dp,
+    columnSpacing: androidx.compose.ui.unit.Dp = 12.dp,
+    maxCharsPerColumn: Int = 8
+) {
+    val columns = text.chunked(maxCharsPerColumn)
+
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(columnSpacing),
+        verticalAlignment = Alignment.Top
+    ) {
+        columns.asReversed().forEach { columnText ->
+            VerticalText(
+                text = columnText,
+                style = style,
+                spacing = spacing
             )
         }
     }
