@@ -74,6 +74,7 @@ import dev.wceng.sufei.data.model.Tune
 import dev.wceng.sufei.data.model.UserPoem
 import dev.wceng.sufei.ui.components.PoemPreviewCard
 import dev.wceng.sufei.ui.components.PoetPreviewCard
+import dev.wceng.sufei.ui.components.SuFeiSearchField
 import dev.wceng.sufei.ui.theme.SuFeiTheme
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -186,22 +187,11 @@ fun ExploreDrawerContent(
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
-        OutlinedTextField(
+        SuFeiSearchField(
             value = query,
             onValueChange = onQueryChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            placeholder = { Text(stringResource(R.string.explore_search_placeholder)) },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-            trailingIcon = {
-                if (query.isNotEmpty()) {
-                    IconButton(onClick = { onQueryChange("") }) {
-                        Icon(Icons.Default.Close, contentDescription = null)
-                    }
-                }
-            },
-            singleLine = true
+            modifier = Modifier.padding(vertical = 8.dp),
+            placeholder = stringResource(R.string.explore_search_placeholder)
         )
 
         Spacer(modifier = Modifier.height(8.dp))

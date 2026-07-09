@@ -11,6 +11,9 @@ import dev.wceng.sufei.data.model.Poem
 import dev.wceng.sufei.data.model.Poet
 import dev.wceng.sufei.data.model.Tag
 import dev.wceng.sufei.data.model.Tune
+import dev.wceng.sufei.util.cleanTitle
+import dev.wceng.sufei.util.cleanAuthor
+import dev.wceng.sufei.util.cleanDescription
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -125,7 +128,12 @@ class ImportRepositoryImpl @Inject constructor(
                     if (line.isNotBlank()) {
                         try {
                             val poet = json.decodeFromString<Poet>(line)
-                            poetsToInsert.add(poet.toEntity())
+                            val cleanedPoet = poet.copy(
+                                descriptions = poet.descriptions.map { 
+                                    it.copy(content = it.content.cleanDescription()) 
+                                }
+                            )
+                            poetsToInsert.add(cleanedPoet.toEntity())
                             if (poetsToInsert.size >= 200) {
                                 poetDao.insertPoets(poetsToInsert.toList())
                                 poetsToInsert.clear()
@@ -156,7 +164,12 @@ class ImportRepositoryImpl @Inject constructor(
                         if (line.isNotBlank()) {
                             try {
                                 val poem = json.decodeFromString<Poem>(line)
-                                entitiesToInsert.add(poem.toEntity())
+                                val cleanedPoem = poem.copy(
+                                    title = poem.title.cleanTitle(),
+                                    author = poem.author.cleanAuthor(),
+                                    content = dev.wceng.sufei.util.cleanPoemContent(poem.content)
+                                )
+                                entitiesToInsert.add(cleanedPoem.toEntity())
                                 
                                 currentCount++
                                 if (entitiesToInsert.size >= 1000) {

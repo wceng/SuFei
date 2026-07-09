@@ -35,7 +35,7 @@ fun PoemEntity.toPoem(): Poem {
         title = title,
         author = author,
         dynasty = dynasty,
-        content = cleanPoemContent(content),
+        content = content,
         tags = tags,
         notes = notes,
         translation = translation,

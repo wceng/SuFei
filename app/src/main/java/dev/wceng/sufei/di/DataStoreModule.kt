@@ -9,6 +9,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import dev.wceng.sufei.data.local.datastore.FavoritesMigration
 import dev.wceng.sufei.data.local.datastore.UserPreferences
 import dev.wceng.sufei.data.local.datastore.UserPreferencesDataSource
 import dev.wceng.sufei.data.local.datastore.UserPreferencesSerializer
@@ -29,6 +30,7 @@ object DataStoreModule {
         return DataStoreFactory.create(
             serializer = UserPreferencesSerializer,
             produceFile = { context.dataStoreFile("user_prefs.pb") },
+            migrations = listOf(FavoritesMigration),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
     }

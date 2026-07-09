@@ -6,7 +6,7 @@ import dev.wceng.sufei.R
  * 用户偏好模型 (业务层使用)
  */
 data class UserPreferences(
-    val favoritePoemIds: Set<String> = emptySet(),
+    val favorites: Map<String, Long> = emptyMap(),
     val fontSizeMultiplier: Float = 1.0f,
     val lineHeightMultiplier: Float = 1.0f,
     val useDynamicColor: Boolean = true,

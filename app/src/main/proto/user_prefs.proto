@@ -6,7 +6,7 @@ option java_multiple_files = true;
 import "chinese_variant.proto";
 
 message UserPreferences {
-  repeated string favorite_poem_ids = 1;
+  repeated string favorite_poem_ids = 1 [deprecated = true];
   float font_size_multiplier = 2;
   float line_height_multiplier = 3;
   bool use_dynamic_color = 4;
@@ -19,4 +19,6 @@ message UserPreferences {
   ChineseVariantProto chinese_variant = 8;
   // 桌面小组件已固定的诗词映射 (appWidgetId → poemId)
   map<int64, string> pinned_widget_poems = 9;
+  // 收藏的诗词 ID 及其收藏时间戳 (ID → timestamp)
+  map<string, int64> favorites = 10;
 }

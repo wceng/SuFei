@@ -29,14 +29,16 @@ data class Poem(
  */
 data class UserPoem(
     val poem: Poem,
-    val isFavorite: Boolean
+    val isFavorite: Boolean,
+    val favoritedTimestamp: Long? = null
 ) {
     /**
      * 辅助构造函数：从 Poem 和 UserPreferences 中创建 UserPoem
      */
     constructor(poem: Poem, userPreferences: UserPreferences) : this(
         poem = poem.convert(userPreferences.chineseVariant),
-        isFavorite = userPreferences.favoritePoemIds.contains(poem.id)
+        isFavorite = userPreferences.favorites.containsKey(poem.id),
+        favoritedTimestamp = userPreferences.favorites[poem.id]
     )
 
     /**
@@ -44,6 +46,7 @@ data class UserPoem(
      */
     constructor(entity: PoemEntity, userPreferences: UserPreferences) : this(
         poem = entity.toPoem().convert(userPreferences.chineseVariant),
-        isFavorite = userPreferences.favoritePoemIds.contains(entity.id)
+        isFavorite = userPreferences.favorites.containsKey(entity.id),
+        favoritedTimestamp = userPreferences.favorites[entity.id]
     )
 }

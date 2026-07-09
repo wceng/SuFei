@@ -135,11 +135,11 @@ class PoemRepositoryImpl @Inject constructor(
     override fun getFavoriteUserPoems(): Flow<List<UserPoem>> {
         return userPreferencesDataSource.userPreferencesFlow
             .flatMapLatest { prefs ->
-                if (prefs.favoritePoemIds.isEmpty()) {
+                if (prefs.favorites.isEmpty()) {
                     flowOf(emptyList())
                 } else {
                     combine(
-                        poemDao.getPoemsByIds(prefs.favoritePoemIds),
+                        poemDao.getPoemsByIds(prefs.favorites.keys),
                         userPreferencesDataSource.userPreferencesFlow
                     ) { entities, currentPrefs ->
                         entities.map { entity ->

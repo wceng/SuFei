@@ -96,4 +96,11 @@
     <string name="splash_loading_2">正为您整理万卷书...</string>
     <string name="splash_loading_3">墨香已至，即将开启...</string>
 
+    <!-- Date Groups -->
+    <string name="date_old_favorites">往日收藏</string>
+    <string name="collection_search_no_results">未找到相关收藏</string>
+
+    <string name="action_close">关闭</string>
+    <string name="action_search">搜索</string>
+
 </resources>

@@ -10,6 +10,7 @@ kotlin = "2.3.0"
 
 composeBom = "2025.09.01"
 kotlinxSerialization = "1.8.0"
+kotlinxCoroutines = "1.10.1"
 room = "2.8.3"
 ksp = "2.3.4"
 datastore = "1.2.0"
@@ -24,6 +25,7 @@ splashscreen = "1.2.0"
 opencc4j = "1.14.0"
 appcompat = "1.7.1"
 glance = "1.2.0-rc01"
+mockk = "1.13.13"
 
 
 [libraries]
@@ -48,9 +50,11 @@ androidx-compose-material3 = { group = "androidx.compose.material3", name = "mat
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 androidx-compose-material3-adaptive-navigation-suite = { group = "androidx.compose.material3", name = "material3-adaptive-navigation-suite", version.ref = "adaptiveNavigationSuite" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 androidx-datastore = { group = "androidx.datastore", name = "datastore", version.ref = "datastore" }
 protobuf-kotlin-lite = { group = "com.google.protobuf", name = "protobuf-kotlin-lite", version.ref = "protobuf" }
 protobuf-protoc = { group = "com.google.protobuf", name = "protoc", version.ref = "protobuf" }

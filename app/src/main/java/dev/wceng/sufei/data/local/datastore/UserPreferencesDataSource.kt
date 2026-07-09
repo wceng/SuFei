@@ -17,7 +17,7 @@ class UserPreferencesDataSource(
     val userPreferencesFlow: Flow<UserPreferencesModel> = userPreferencesStore.data
         .map { proto ->
             UserPreferencesModel(
-                favoritePoemIds = proto.favoritePoemIdsList.toSet(),
+                favorites = proto.favoritesMap,
                 fontSizeMultiplier = if (proto.fontSizeMultiplier == 0f) 1.0f else proto.fontSizeMultiplier,
                 lineHeightMultiplier = if (proto.lineHeightMultiplier == 0f) 1.0f else proto.lineHeightMultiplier,
                 useDynamicColor = proto.useDynamicColor,
@@ -51,15 +51,15 @@ class UserPreferencesDataSource(
      */
     suspend fun toggleFavorite(poemId: String, isFavorite: Boolean) {
         updateData { currentPrefs ->
-            val currentIds = currentPrefs.favoritePoemIdsList.toSet()
-            val newIds = if (isFavorite) {
-                currentIds + poemId
+            val favoritesBuilder = currentPrefs.favoritesMap.toMutableMap()
+            if (isFavorite) {
+                favoritesBuilder[poemId] = System.currentTimeMillis()
             } else {
-                currentIds - poemId
+                favoritesBuilder.remove(poemId)
             }
             currentPrefs.toBuilder()
-                .clearFavoritePoemIds()
-                .addAllFavoritePoemIds(newIds)
+                .clearFavorites()
+                .putAllFavorites(favoritesBuilder)
                 .build()
         }
     }
