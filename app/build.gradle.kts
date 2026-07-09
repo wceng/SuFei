@@ -16,8 +16,8 @@ android {
         applicationId = "dev.wceng.sufei"
         minSdk = 23
         targetSdk = 35
-        versionCode = 8
-        versionName = "1.5.2"
+        versionCode = 9
+        versionName = "1.6.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
