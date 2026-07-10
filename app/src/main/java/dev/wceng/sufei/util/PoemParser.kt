@@ -1,7 +1,19 @@
 package dev.wceng.sufei.util
 
 fun cleanPoemContent(content: String): String {
-    return content.replace(Regex("[（(][^（）()]*([）)]|$)"), "").trim()
+    var result = content
+    // 使用 Unicode 编码支持 () 和 （）
+    val open = "\\u0028\\uFF08"
+    val close = "\\u0029\\uFF09"
+    val regex = Regex("[$open][^$open$close]*[$close]")
+    
+    var prev: String
+    do {
+        prev = result
+        result = result.replace(regex, "")
+    } while (result != prev)
+
+    return result.trim()
 }
 
 fun String.cleanTitle(): String {

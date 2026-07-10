@@ -14,6 +14,7 @@ import dev.wceng.sufei.data.model.Tune
 import dev.wceng.sufei.util.cleanTitle
 import dev.wceng.sufei.util.cleanAuthor
 import dev.wceng.sufei.util.cleanDescription
+import dev.wceng.sufei.util.cleanPoemContent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -167,7 +168,7 @@ class ImportRepositoryImpl @Inject constructor(
                                 val cleanedPoem = poem.copy(
                                     title = poem.title.cleanTitle(),
                                     author = poem.author.cleanAuthor(),
-                                    content = dev.wceng.sufei.util.cleanPoemContent(poem.content)
+                                    content = cleanPoemContent(poem.content)
                                 )
                                 entitiesToInsert.add(cleanedPoem.toEntity())
                                 

@@ -1,0 +1,1 @@
+Fixed lingering parentheses in database, improved localization, and refined content cleaning logic.

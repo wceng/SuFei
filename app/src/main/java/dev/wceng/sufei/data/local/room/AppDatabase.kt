@@ -21,8 +21,8 @@ import kotlinx.serialization.json.Json
         PoetEntity::class, 
         TuneEntity::class
     ],
-    version = 7, 
-    exportSchema = false
+    version = 9,
+    exportSchema = true
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -57,64 +57,18 @@ abstract class AppDatabase : RoomDatabase() {
 
         val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                // 再次执行清理逻辑以便深入调试
-                println("Migration 4-5 starting: Re-scanning for parenthesis content...")
-                var offset = 0
-                var totalUpdated = 0
-                var hasMore = true
-                while (hasMore) {
-                    val dirtyData = mutableListOf<Pair<String, String>>()
-                    val cursor = db.query(
-                        "SELECT id, content FROM poems WHERE content LIKE '%（%' OR content LIKE '%(%' ORDER BY id LIMIT 500 OFFSET ?",
-                        arrayOf(offset)
-                    )
-
-                    var count = 0
-                    if (cursor.moveToFirst()) {
-                        val idIndex = cursor.getColumnIndex("id")
-                        val contentIndex = cursor.getColumnIndex("content")
-                        do {
-                            dirtyData.add(cursor.getString(idIndex) to cursor.getString(contentIndex))
-                            count++
-                        } while (cursor.moveToNext())
-                    }
-                    cursor.close()
-
-                    if (count < 500) {
-                        hasMore = false
-                    }
-
-                    dirtyData.forEach { (id, content) ->
-                        val cleanedContent = dev.wceng.sufei.util.cleanPoemContent(content)
-                        if (content != cleanedContent) {
-                            db.execSQL(
-                                "UPDATE poems SET content = ? WHERE id = ?",
-                                arrayOf(cleanedContent, id)
-                            )
-                            totalUpdated++
-                        } else {
-                            println("Migration 4-5: SKIP ID $id")
-                            println("  FULL CONTENT: $content")
-                        }
-                    }
-
-                    offset += count
-                }
-                println("Migration 4-5 complete. Total cleaned: $totalUpdated")
+                // 占位迁移
             }
         }
 
         val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 println("Migration 5-6 starting: Cleaning author field...")
-                var offset = 0
                 var totalUpdated = 0
-                var hasMore = true
-                while (hasMore) {
+                while (true) {
                     val dirtyData = mutableListOf<Pair<String, String>>()
                     val cursor = db.query(
-                        "SELECT id, author FROM poems WHERE author LIKE '%撰%' ORDER BY id LIMIT 500 OFFSET ?",
-                        arrayOf(offset)
+                        "SELECT id, author FROM poems WHERE author LIKE '%撰%' LIMIT 500"
                     )
 
                     var count = 0
@@ -128,10 +82,6 @@ abstract class AppDatabase : RoomDatabase() {
                     }
                     cursor.close()
 
-                    if (count < 500) {
-                        hasMore = false
-                    }
-
                     dirtyData.forEach { (id, author) ->
                         val cleanedAuthor = author.cleanAuthor()
                         if (author != cleanedAuthor) {
@@ -142,7 +92,7 @@ abstract class AppDatabase : RoomDatabase() {
                             totalUpdated++
                         }
                     }
-                    offset += count
+                    if (count < 500) break
                 }
                 println("Migration 5-6 complete. Total cleaned: $totalUpdated")
             }
@@ -175,6 +125,51 @@ abstract class AppDatabase : RoomDatabase() {
                 }
                 cursor.close()
                 println("Migration 6-7 complete.")
+            }
+        }
+
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // 占位迁移
+            }
+        }
+
+        val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                println("Migration 8-9 starting: Remedial cleaning for missed poem content...")
+                var totalUpdated = 0
+                while (true) {
+                    val dirtyData = mutableListOf<Pair<String, String>>()
+                    val cursor = db.query(
+                        "SELECT id, content FROM poems WHERE content LIKE '%（%' OR content LIKE '%(%' LIMIT 500"
+                    )
+
+                    var count = 0
+                    if (cursor.moveToFirst()) {
+                        val idIndex = cursor.getColumnIndex("id")
+                        val contentIndex = cursor.getColumnIndex("content")
+                        do {
+                            dirtyData.add(cursor.getString(idIndex) to cursor.getString(contentIndex))
+                            count++
+                        } while (cursor.moveToNext())
+                    }
+                    cursor.close()
+
+                    dirtyData.forEach { (id, content) ->
+                        val cleanedContent = dev.wceng.sufei.util.cleanPoemContent(content)
+                        if (content != cleanedContent) {
+                            println("Migration 8-9: UPDATING ID $id")
+                            db.execSQL(
+                                "UPDATE poems SET content = ? WHERE id = ?",
+                                arrayOf(cleanedContent, id)
+                            )
+                            totalUpdated++
+                        }
+                    }
+
+                    if (count < 500) break
+                }
+                println("Migration 8-9 complete. Total cleaned: $totalUpdated")
             }
         }
     }
