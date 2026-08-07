@@ -22,3 +22,6 @@ app/release/
 
 # Signing
 keystore.properties
+
+# Claude Code internal working files
+/.artifacts/

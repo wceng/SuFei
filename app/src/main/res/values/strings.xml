@@ -103,4 +103,22 @@
     <string name="action_close">关闭</string>
     <string name="action_search">搜索</string>
 
+    <!-- Write Poem -->
+    <string name="action_write_poem">撰写</string>
+    <string name="write_poem_title">撰写诗词</string>
+    <string name="write_poem_select_tune">选择词牌</string>
+    <string name="write_poem_title_hint">请输入标题</string>
+    <string name="write_poem_content_hint">在此输入正文...</string>
+    <string name="write_poem_save">保存至枕边</string>
+    <string name="write_poem_save_success">已保存</string>
+    <string name="write_poem_metrical_hint">格律参考</string>
+    <string name="write_poem_preview">预览</string>
+    <string name="write_poem_tune_label">词牌</string>
+    <string name="write_poem_title_placeholder">无题</string>
+    <string name="write_poem_metrical_legend">○ 平声 · ● 仄声 · ⊙ 可平可仄</string>
+    <string name="write_poem_save_seal">存</string>
+    <string name="write_poem_preview_tune_format">· %1$s ·</string>
+    <string name="write_poem_punct_hint">点按句末标点可选择，亦可留空</string>
+    <string name="write_poem_no_punct">无</string>
+
 </resources>

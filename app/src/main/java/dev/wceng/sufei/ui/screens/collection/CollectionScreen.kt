@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -41,6 +42,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun CollectionScreen(
     onPoemClick: (String) -> Unit,
+    onWritePoemClick: () -> Unit,
     viewModel: CollectionViewModel = hiltViewModel()
 ) {
     val favoritePoems by viewModel.favoritePoems.collectAsState()
@@ -56,6 +58,7 @@ fun CollectionScreen(
         onSearchQueryChange = viewModel::onSearchQueryChange,
         snackbarHostState = snackbarHostState,
         onPoemClick = onPoemClick,
+        onWritePoemClick = onWritePoemClick,
         onToggleFavorite = { id, isFav ->
             viewModel.toggleFavorite(id, isFav)
             if (!isFav) {
@@ -82,13 +85,21 @@ fun CollectionContent(
     onSearchQueryChange: (String) -> Unit,
     snackbarHostState: SnackbarHostState,
     onPoemClick: (String) -> Unit,
-    onToggleFavorite: (String, Boolean) -> Unit
+    onToggleFavorite: (String, Boolean) -> Unit,
+    onWritePoemClick: () -> Unit
 ) {
     var isSearchVisible by rememberSaveable { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
 
     Scaffold(
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = onWritePoemClick,
+                icon = { Icon(Icons.Default.Edit, contentDescription = null) },
+                text = { Text(stringResource(R.string.action_write_poem)) }
+            )
+        },
         topBar = {
             CenterAlignedTopAppBar(
                 title = { 
@@ -311,7 +322,8 @@ fun CollectionContentPreview() {
             onSearchQueryChange = {},
             snackbarHostState = remember { SnackbarHostState() },
             onPoemClick = {},
-            onToggleFavorite = { _, _ -> }
+            onToggleFavorite = { _, _ -> },
+            onWritePoemClick = {}
         )
     }
 }

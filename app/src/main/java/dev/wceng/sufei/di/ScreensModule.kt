@@ -22,6 +22,7 @@ import dev.wceng.sufei.ui.navigation.Navigator
 import dev.wceng.sufei.ui.navigation.PoetDetail
 import dev.wceng.sufei.ui.navigation.PoetWorks
 import dev.wceng.sufei.ui.navigation.Settings
+import dev.wceng.sufei.ui.navigation.WritePoem
 import dev.wceng.sufei.ui.screens.collection.CollectionScreen
 import dev.wceng.sufei.ui.screens.detail.DetailScreen
 import dev.wceng.sufei.ui.screens.detail.DetailViewModel
@@ -33,6 +34,7 @@ import dev.wceng.sufei.ui.screens.poet.PoetDetailViewModel
 import dev.wceng.sufei.ui.screens.poetworks.PoetWorksScreen
 import dev.wceng.sufei.ui.screens.poetworks.PoetWorksViewModel
 import dev.wceng.sufei.ui.screens.settings.SettingsScreen
+import dev.wceng.sufei.ui.screens.write.WritePoemScreen
 
 /**
  * 屏幕路由注册模块
@@ -138,6 +140,9 @@ object ScreensModule {
             CollectionScreen(
                 onPoemClick = { poemId ->
                     navigator.goTo(Detail(poemId))
+                },
+                onWritePoemClick = {
+                    navigator.goTo(WritePoem)
                 }
             )
         }
@@ -189,6 +194,34 @@ object ScreensModule {
     fun provideSettingsEntry(): EntryProviderInstaller = {
         entry<Settings> {
             SettingsScreen()
+        }
+    }
+
+    @IntoSet
+    @Provides
+    fun provideWritePoemEntry(navigator: Navigator): EntryProviderInstaller = {
+        entry<WritePoem>(
+            metadata = NavDisplay.transitionSpec {
+                (slideInVertically(
+                    animationSpec = tween(400),
+                    initialOffsetY = { it / 10 }) + fadeIn()) togetherWith
+                        fadeOut(animationSpec = tween(400))
+            } + NavDisplay.popTransitionSpec {
+                fadeIn(animationSpec = tween(400)) togetherWith
+                        (slideOutVertically(
+                            animationSpec = tween(400),
+                            targetOffsetY = { it / 10 }) + fadeOut())
+            } + NavDisplay.predictivePopTransitionSpec { _ ->
+                fadeIn(animationSpec = tween(400)) togetherWith
+                        (slideOutVertically(
+                            animationSpec = tween(400),
+                            targetOffsetY = { it / 10 }) + fadeOut())
+            }
+        ) {
+            WritePoemScreen(
+                onBack = { navigator.goBack() },
+                onSave = { _, _, _ -> /* 数据层后续接入；页面内已提供“已保存” Snackbar 反馈 */ }
+            )
         }
     }
 }

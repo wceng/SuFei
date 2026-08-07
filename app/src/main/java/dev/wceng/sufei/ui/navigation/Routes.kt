@@ -30,3 +30,6 @@ data class PoetDetail(val id: String)
 
 @Serializable
 data class PoetWorks(val poetName: String)
+
+@Serializable
+object WritePoem
