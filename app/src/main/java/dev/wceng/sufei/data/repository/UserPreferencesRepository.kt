@@ -11,6 +11,7 @@ interface UserPreferencesRepository {
     val userPreferences: Flow<UserPreferences>
 
     suspend fun toggleFavorite(poemId: String, isFavorite: Boolean)
+    suspend fun addUserPoem(poemId: String)
     suspend fun setFontSizeMultiplier(multiplier: Float)
     suspend fun setLineHeightMultiplier(multiplier: Float)
     suspend fun setUseDynamicColor(use: Boolean)

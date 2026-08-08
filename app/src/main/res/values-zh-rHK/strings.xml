@@ -72,6 +72,7 @@
     <string name="action_tts_stop">停止朗讀</string>
     <string name="action_tts_start">朗讀</string>
     <string name="action_favorite">收藏</string>
+    <string name="collection_tab_user_created">創作</string>
     <string name="action_share">分享</string>
     <string name="action_remove_favorite">取消收藏</string>
     <string name="share_poem_title">分享詩詞</string>

@@ -21,6 +21,9 @@ interface PoemDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPoems(poems: List<PoemEntity>)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPoem(poem: PoemEntity)
+
     @Query("SELECT COUNT(*) FROM poems")
     suspend fun getPoemCount(): Int
 

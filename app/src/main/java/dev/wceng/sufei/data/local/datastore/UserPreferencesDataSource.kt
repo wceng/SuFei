@@ -18,6 +18,7 @@ class UserPreferencesDataSource(
         .map { proto ->
             UserPreferencesModel(
                 favorites = proto.favoritesMap,
+                userPoems = proto.userPoemsMap,
                 fontSizeMultiplier = if (proto.fontSizeMultiplier == 0f) 1.0f else proto.fontSizeMultiplier,
                 lineHeightMultiplier = if (proto.lineHeightMultiplier == 0f) 1.0f else proto.lineHeightMultiplier,
                 useDynamicColor = proto.useDynamicColor,
@@ -60,6 +61,20 @@ class UserPreferencesDataSource(
             currentPrefs.toBuilder()
                 .clearFavorites()
                 .putAllFavorites(favoritesBuilder)
+                .build()
+        }
+    }
+
+    /**
+     * 登记用户创作的诗词（创作时间戳）
+     */
+    suspend fun addUserPoem(poemId: String) {
+        updateData { currentPrefs ->
+            val userPoemsBuilder = currentPrefs.userPoemsMap.toMutableMap()
+            userPoemsBuilder[poemId] = System.currentTimeMillis()
+            currentPrefs.toBuilder()
+                .clearUserPoems()
+                .putAllUserPoems(userPoemsBuilder)
                 .build()
         }
     }

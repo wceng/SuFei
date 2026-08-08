@@ -5,6 +5,8 @@ import dev.wceng.sufei.data.local.room.PoemDao
 import dev.wceng.sufei.data.local.room.PoetDao
 import dev.wceng.sufei.data.local.room.TagDao
 import dev.wceng.sufei.data.local.room.TuneDao
+import dev.wceng.sufei.data.local.room.entity.PoemEntity
+import dev.wceng.sufei.data.local.room.entity.toPoem
 import dev.wceng.sufei.data.local.room.entity.toPoet
 import dev.wceng.sufei.data.local.room.entity.toTag
 import dev.wceng.sufei.data.local.room.entity.toTune
@@ -26,6 +28,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -144,6 +147,46 @@ class PoemRepositoryImpl @Inject constructor(
                     ) { entities, currentPrefs ->
                         entities.map { entity ->
                             UserPoem(entity, currentPrefs)
+                        }
+                    }
+                }
+            }
+            .flowOn(Dispatchers.IO)
+    }
+
+    override suspend fun saveUserPoem(title: String, content: String, tuneName: String?): String {
+        val poemId = UUID.randomUUID().toString()
+        poemDao.insertPoem(
+            PoemEntity(
+                id = poemId,
+                sourceUrl = "user",
+                title = title,
+                author = "佚名",
+                dynasty = "当代",
+                content = content,
+                tags = emptyList()
+            )
+        )
+        return poemId
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun getUserCreatedPoems(): Flow<List<UserPoem>> {
+        return userPreferencesDataSource.userPreferencesFlow
+            .flatMapLatest { prefs ->
+                if (prefs.userPoems.isEmpty()) {
+                    flowOf(emptyList())
+                } else {
+                    combine(
+                        poemDao.getPoemsByIds(prefs.userPoems.keys),
+                        userPreferencesDataSource.userPreferencesFlow
+                    ) { entities, currentPrefs ->
+                        entities.map { entity ->
+                            UserPoem(
+                                poem = entity.toPoem().convert(currentPrefs.chineseVariant),
+                                isFavorite = currentPrefs.favorites.containsKey(entity.id),
+                                favoritedTimestamp = currentPrefs.userPoems[entity.id]
+                            )
                         }
                     }
                 }

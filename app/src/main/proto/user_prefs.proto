@@ -21,4 +21,6 @@ message UserPreferences {
   map<int64, string> pinned_widget_poems = 9;
   // 收藏的诗词 ID 及其收藏时间戳 (ID → timestamp)
   map<string, int64> favorites = 10;
+  // 用户创作的诗词 ID 及其创作时间戳 (ID → timestamp)
+  map<string, int64> user_poems = 11;
 }

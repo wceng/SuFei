@@ -72,6 +72,7 @@
     <string name="action_tts_stop">停止朗读</string>
     <string name="action_tts_start">朗读</string>
     <string name="action_favorite">收藏</string>
+    <string name="collection_tab_user_created">创作</string>
     <string name="action_share">分享</string>
     <string name="action_remove_favorite">取消收藏</string>
     <string name="share_poem_title">分享诗词</string>
@@ -112,12 +113,9 @@
     <string name="write_poem_save">保存至枕边</string>
     <string name="write_poem_save_success">已保存</string>
     <string name="write_poem_metrical_hint">格律参考</string>
-    <string name="write_poem_preview">预览</string>
     <string name="write_poem_tune_label">词牌</string>
     <string name="write_poem_title_placeholder">无题</string>
     <string name="write_poem_metrical_legend">○ 平声 · ● 仄声 · ⊙ 可平可仄</string>
-    <string name="write_poem_save_seal">存</string>
-    <string name="write_poem_preview_tune_format">· %1$s ·</string>
     <string name="write_poem_punct_hint">点按句末标点可选择，亦可留空</string>
     <string name="write_poem_no_punct">无</string>
 

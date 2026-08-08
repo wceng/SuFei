@@ -57,6 +57,16 @@ interface PoemRepository {
     fun getFavoriteUserPoems(): Flow<List<UserPoem>>
 
     /**
+     * 保存用户创作的诗词（写入 poems 表），返回诗词 ID
+     */
+    suspend fun saveUserPoem(title: String, content: String, tuneName: String?): String
+
+    /**
+     * 获取用户创作的诗词（创作时间戳复用 favoritedTimestamp 字段）
+     */
+    fun getUserCreatedPoems(): Flow<List<UserPoem>>
+
+    /**
      * 获取所有标签
      */
     fun getAllTags(): Flow<List<Tag>>

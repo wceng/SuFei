@@ -18,6 +18,10 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         dataSource.toggleFavorite(poemId, isFavorite)
     }
 
+    override suspend fun addUserPoem(poemId: String) {
+        dataSource.addUserPoem(poemId)
+    }
+
     override suspend fun setFontSizeMultiplier(multiplier: Float) {
         dataSource.setFontSizeMultiplier(multiplier)
     }

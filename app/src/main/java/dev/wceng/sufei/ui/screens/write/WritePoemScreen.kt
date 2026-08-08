@@ -17,7 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
+import androidx.hilt.navigation.compose.hiltViewModel
 import dev.wceng.sufei.R
 import dev.wceng.sufei.ui.theme.NotoSerifSC
 import dev.wceng.sufei.ui.theme.SuFeiTheme
@@ -149,6 +150,11 @@ fun PoemCell(
         targetValue = if (isFocused) 1.06f else 1f,
         label = "cellScale"
     )
+    // 填字后淡化平仄提示，避免与汉字争夺视线（保留微弱的格律参考）
+    val patternAlpha by animateFloatAsState(
+        targetValue = if (text.isNotEmpty()) 0.12f else 0.45f,
+        label = "patternAlpha"
+    )
     val borderColor by animateColorAsState(
         targetValue = if (isFocused) MaterialTheme.colorScheme.primary
         else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
@@ -177,7 +183,7 @@ fun PoemCell(
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        // 底部的平仄提示
+        // 底部的平仄提示（填字后淡化）
         pattern?.let {
             Text(
                 text = it.toString(),
@@ -186,7 +192,7 @@ fun PoemCell(
                     .padding(2.dp),
                 style = TextStyle(
                     fontSize = 10.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = patternAlpha)
                 )
             )
         }
@@ -502,12 +508,11 @@ private fun TunePickerSheet(
 @Composable
 fun WritePoemScreen(
     onBack: () -> Unit,
-    onSave: (title: String, content: String, tuneName: String?) -> Unit
+    viewModel: WritePoemViewModel = hiltViewModel()
 ) {
     var title by remember { mutableStateOf("") }
     var selectedTune by remember { mutableStateOf(samplePatterns[0]) }
     var showTunePicker by remember { mutableStateOf(false) }
-    var showPreview by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -596,7 +601,7 @@ fun WritePoemScreen(
                 append("\n")
             }
         }.trim()
-        onSave(title, fullContent, selectedTune.name)
+        viewModel.savePoem(title, fullContent, selectedTune.name)
         scope.launch {
             snackbarHostState.showSnackbar(saveSuccessMsg)
         }
@@ -604,6 +609,8 @@ fun WritePoemScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
+        // 布局区压缩到键盘上方：bottomBar（存/保存至枕边）悬浮在键盘之上，固定不动
+        modifier = Modifier.imePadding(),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
@@ -625,11 +632,11 @@ fun WritePoemScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { showPreview = true }) {
+                    IconButton(onClick = saveContent) {
                         Icon(
-                            Icons.Default.Visibility,
-                            contentDescription = stringResource(R.string.write_poem_preview),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            Icons.Default.Save,
+                            contentDescription = stringResource(R.string.write_poem_save),
+                            tint = SealRed
                         )
                     }
                 },
@@ -638,38 +645,6 @@ fun WritePoemScreen(
                     titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
-        },
-        bottomBar = {
-            // 妃红印章式保存 —— 呼应首页诗人印章
-            Surface(color = MaterialTheme.colorScheme.surface) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(64.dp)
-                            .border(1.2.dp, SealRed, RoundedCornerShape(10.dp))
-                            .clickable(onClick = saveContent),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = stringResource(R.string.write_poem_save_seal),
-                            fontFamily = NotoSerifSC,
-                            fontSize = 24.sp,
-                            color = SealRed
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = stringResource(R.string.write_poem_save),
-                        style = MaterialTheme.typography.labelSmall.copy(fontFamily = NotoSerifSC),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                    )
-                }
-            }
         }
     ) { innerPadding ->
         Column(
@@ -685,31 +660,6 @@ fun WritePoemScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                // 词牌选择（行内轻量选择，去掉表单感）
-                Row(
-                    modifier = Modifier
-                        .clickable { showTunePicker = true }
-                        .padding(vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(R.string.write_poem_tune_label),
-                        style = MaterialTheme.typography.bodyMedium.copy(fontFamily = NotoSerifSC),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = selectedTune.name,
-                        style = MaterialTheme.typography.titleMedium.copy(fontFamily = NotoSerifSC),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                    )
-                }
-
                 // 标题输入（纸上题名：居中衬线 + 极淡下划线）
                 BasicTextField(
                     value = title,
@@ -748,6 +698,31 @@ fun WritePoemScreen(
                         }
                     }
                 )
+
+                // 词牌选择（行内轻量选择，去掉表单感；作为写作格式选择器贴近网格）
+                Row(
+                    modifier = Modifier
+                        .clickable { showTunePicker = true }
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.write_poem_tune_label),
+                        style = MaterialTheme.typography.bodyMedium.copy(fontFamily = NotoSerifSC),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = selectedTune.name,
+                        style = MaterialTheme.typography.titleMedium.copy(fontFamily = NotoSerifSC),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    )
+                }
 
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 2.dp),
@@ -813,68 +788,12 @@ fun WritePoemScreen(
             onDismiss = { showTunePicker = false }
         )
     }
-
-    if (showPreview) {
-        AlertDialog(
-            onDismissRequest = { showPreview = false },
-            confirmButton = {
-                TextButton(onClick = { showPreview = false }) {
-                    Text(stringResource(R.string.action_close))
-                }
-            },
-            title = {
-                Text(
-                    text = title.ifEmpty { stringResource(R.string.write_poem_title_placeholder) },
-                    fontFamily = NotoSerifSC,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = stringResource(R.string.write_poem_preview_tune_format, selectedTune.name),
-                        style = MaterialTheme.typography.bodyMedium.copy(fontFamily = NotoSerifSC),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // 横排预览
-                    cellsByLine.forEachIndexed { rowIndex, line ->
-                        if (line.isNotEmpty()) {
-                            val lineText = line.joinToString("") { cell ->
-                                when (cell) {
-                                    is GridCell.InputSlot -> chars.getOrElse(cell.index) { "" }.ifEmpty { "　" }
-                                }
-                            } + puncts.getOrElse(rowIndex) { "" }
-                            Text(
-                                text = lineText,
-                                style = MaterialTheme.typography.bodyLarge.copy(
-                                    fontFamily = NotoSerifSC,
-                                    lineHeight = 36.sp,
-                                    letterSpacing = 2.sp,
-                                    textAlign = TextAlign.Center
-                                )
-                            )
-                        }
-                    }
-                }
-            }
-        )
-    }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun WritePoemScreenPreview() {
     SuFeiTheme {
-        WritePoemScreen(
-            onBack = {},
-            onSave = { _, _, _ -> }
-        )
+        WritePoemScreen(onBack = {})
     }
 }

@@ -219,8 +219,7 @@ object ScreensModule {
             }
         ) {
             WritePoemScreen(
-                onBack = { navigator.goBack() },
-                onSave = { _, _, _ -> /* 数据层后续接入；页面内已提供“已保存” Snackbar 反馈 */ }
+                onBack = { navigator.goBack() }
             )
         }
     }

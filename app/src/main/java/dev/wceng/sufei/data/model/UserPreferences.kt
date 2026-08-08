@@ -7,6 +7,7 @@ import dev.wceng.sufei.R
  */
 data class UserPreferences(
     val favorites: Map<String, Long> = emptyMap(),
+    val userPoems: Map<String, Long> = emptyMap(),
     val fontSizeMultiplier: Float = 1.0f,
     val lineHeightMultiplier: Float = 1.0f,
     val useDynamicColor: Boolean = true,
